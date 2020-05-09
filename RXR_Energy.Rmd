@@ -24,25 +24,30 @@ The data comes from an hourly trend file of the building's aggregated electric u
 
 read_csv("C:/Users/paulr/Documents/RXR_Energy/230 Park Avenue Total Building Electric (Curtailment).csv", col_names = TRUE) %>% select(c(1:2)) -> ies_elect_data
 
+#Remove NA's
+ies_elect_data <- na.omit(ies_elect_data)
 
-# Need to see if data time feacher is in dttm format, if not use the linte below. 
+# Need to see if data time feather is in dttm format, if not use the linte below. 
 glimpse(ies_elect_data)
 # mdy_hm(ies_elect_data$`Date`) -> ies_elect_data$`Date`
 
-#Clean up feacher names to make reporting readable 
+#Clean up feather names to make reporting readable 
 ies_elect_data <-  rename(ies_elect_data, Date = "Date/Time", "Electric" = "Total Building Electric (Curtailment)")
 
 ies_elect_data %>% mutate(week = week(`Date`), year = year(`Date`)) %>% group_by(year, week) %>% summarise(total = sum(`Electric`, mininum = min(`Electric`))) -> ies_elect_data_week 
 
-ies_elect_data %>% mutate(week = week(`Date`), year = year(`Date`)) %>% group_by(year, week) %>% summarise(baseload = min(`Electric`)) %>% mutate(baseload = baseload * 7 * 24) -> ies_elect_data_week_baseload
+ies_elect_data %>% mutate(week = week(`Date`), year = year(`Date`)) %>% group_by(year, week) %>% summarise(baseload = min(`Electric`)) %>% mutate(baseload = baseload * 7 * 24) -> ies_elect_data_week_baseload 
+
+glimpse(ies_elect_data)
+glimpse(na.omit(ies_elect_data))
 
 left_join(ies_elect_data_week, ies_elect_data_week_baseload) -> ies_elect_data_week
 
 ies_elect_data_week %>% ggplot(aes(`week`, na.rm=TRUE)) +
-  geom_line(aes(y=`baseload`, colour = "red")) +
+  geom_line(aes(y=`baseload`, colour = "red", na.rm=TRUE)) +
   geom_line(aes(y=`total`, color = "blue"))
 
-ies_elect_data %>% ggplot(aes(x=`Date`, y = `Electric`))+
+ies_elect_data %>% ggplot(aes(x=`Date`, y = `Electric`, na,rm = TRUE))+
   geom_line(aes(colour = "blue"), na.rm=TRUE)
 
 glimpse(ies_elect_data)
