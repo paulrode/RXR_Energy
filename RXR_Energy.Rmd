@@ -21,9 +21,9 @@ The data comes from an hourly trend file of the building's aggregated electric u
 
 #Need data.frame to have Date/Time, Aggregate Base Building Electric Use, Temperture, and Enthalpy; deleate all elce that may have been downloaded in the csv. 
 
-read_csv("C:/Users/paulr/Documents/230ParkEnergy/data/230 Park Avenue Total Building Electric (Curtailment).csv", col_names = TRUE) %>% select(c(1:2)) -> ies_elect_data
+read_csv("C:/Users/paulr/Documents/RXR_Energy/230 Park Avenue Total Building Electric (Curtailment).csv", col_names = TRUE) %>% select(c(1:2)) -> ies_elect_data
 
-mdy_hm(ies_elect_data$`Date`) -> ies_elect_data$`Date`
+# mdy_hm(ies_elect_data$`Date`) -> ies_elect_data$`Date`
 
 ies_elect_data %>% mutate(week = week(`Date`), year = year(`Date`)) %>% group_by(year, week) %>% summarise(total = sum(`TotalElectric`, mininum = min(`TotalElectric`))) -> ies_elect_data_week 
 
