@@ -60,10 +60,10 @@ glimpse(ies_elect_data)
 ies_elect_data %>% mutate(week = week(`Date`), year = year(`Date`), day = wday(`Date`), dateday = year * 100 + week * 10 + day) %>% group_by(year, week, day) -> ies_elect_data_day
 
 
-ies_elect_data_day %>% ggplot(aes(x = week, y =  `TotalElectric`)) +
+ies_elect_data_day %>% ggplot(aes(x = week, y =  `Electric`)) +
   geom_boxplot(aes(group =week))
 
-ies_elect_data_day %>% mutate(month = month(`Date`)) %>% ggplot(aes(x = month, y =  `TotalElectric`)) +
+ies_elect_data_day %>% mutate(month = month(`Date`)) %>% ggplot(aes(x = month, y =  `Electric`)) +
   geom_boxplot(aes(group =month))
 
 ```
