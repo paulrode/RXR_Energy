@@ -60,6 +60,7 @@ glimpse(ies_elect_data)
 ies_elect_data %>% mutate(week = week(`Date`), year = year(`Date`), day = wday(`Date`), dateday = year * 100 + week * 10 + day) %>% group_by(year, week, day) -> ies_elect_data_day
 
 
+
 ies_elect_data_day %>% ggplot(aes(x = week, y =  `Electric`)) +
   geom_boxplot(aes(group =week))
 
@@ -67,21 +68,39 @@ ies_elect_data_day %>% mutate(month = month(`Date`)) %>% ggplot(aes(x = month, y
   geom_boxplot(aes(group =month))
 
 ```
-
 #just choose business hours
 ies_data %>%
   mutate(hr = hour(ies_data$`Date/Time`)) %>%
   filter(hr>7 & hr<18)-> ies_data_business_hours
 
+```{r, echo=FALSE}
 #make a timeseries 
-ies_data_ts <- ts(ies_data_business_hours[,c(2:5)], start = c(2018, as.numeric(format(ies_data_business_hours$`Date/Time`, "%j"))), frequency = 365)
+ies_data_ts <- ts(ies_elect_data, start = c(2019,4), frequency = 365)
+
+ ies_data_ts <- ts(ies_elect_data, start = c(2019, as.numeric(format(ies_elect_data$Date, "%j"))), frequency = 365)                                                    
+
+ glimpse(ies_data_ts)
+ glimpse(ies_elect_data)
+                                                     as.numeric(format(ies_data_business_hours$`Date/Time`, "%j")), frequency = 365)
+
 
 
 #Looking at relationships
-GGally::ggpairs(ies_data_business_hours)
-glimpse(ies_data_business_hours)
+GGally::ggpairs(ies_elect_data)
+
 head(ies_data_ts, n=25)
      
+
+
+
+```
+
+
+
+
+
+
+
 
 #fit model
    tslm(ies_data_ts[,"Aggregate Base Building Electric Use"] ~ ies_data_ts[,"Total Occupancy"]) -> fit.ies_data_ts
