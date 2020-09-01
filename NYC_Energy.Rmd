@@ -3,7 +3,7 @@ title: "NYC Portfolio"
 output: html_notebook
 ---
 
-# Electric  
+# Electric   
 
 ```{r, echo=FALSE, results="hide", include=FALSE}
   # Enviroment 
