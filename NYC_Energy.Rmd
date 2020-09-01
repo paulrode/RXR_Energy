@@ -33,10 +33,54 @@ output: html_notebook
   #Package for reading and writing to jpeg files
     library("jpeg")
 
-  # Set proper working Dir
+  # Set proper working Dir 
     if (!getwd() == "C:/Users/paulr/Documents/RXR_Energy") {setwd("C:/Users/paulr/Documents/RXR_Energy")}
 
+# Set proper working Dir
+if (!getwd() == "C:/Users/paulr/Documents/RXR_Energy") {setwd("./RXR_Energy")}
+
+# Check for data directory and if one is not present then make it
+if (!file.exists("data")) {
+  dir.create("data")
+}
 
 ```
 
+# Data from utility bills 
+
+```{r, echo=FALSE}
+#Read in data and fix formats
+alldata <- read_csv("./data/MASTER METERING DATA(2).csv", col_names = TRUE, col_types = "cccccddcd")
+alldata$`Start Date`<- mdy(alldata$`Start Date`)
+alldata$`End Date` <- mdy(alldata$`End Date`)
+glimpse(alldata)
+str(alldata)
+head(alldata)
+tail(alldata)
+
+```
+
+
+
+
+```{r, echo=FALSE}
+#Summerarise by building, and fuel type and year.
+alldata %>% mutate(year(`Start Date`)) %>% group_by(Building, `Meter Type`, Year, Units) %>%
+  summarise(Consumpton = sum(Usage)) %>% select(Building, `Meter Type`, Year, Consumpton, Units) -> annualdata
+
+glimpse(annualdata)
+
+
+
+
+
+
+
+
+
+
+
+
+
+```
 
