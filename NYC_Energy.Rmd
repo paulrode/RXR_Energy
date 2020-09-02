@@ -50,6 +50,7 @@ if (!file.exists("data")) {
 
 ```{r, echo=FALSE}
 #Read in data and fix formats
+
 alldata <- read_csv("./data/MASTER METERING DATA(2).csv", col_names = TRUE, col_types = "cccccddcd")
 alldata$`Start Date`<- mdy(alldata$`Start Date`)
 alldata$`End Date` <- mdy(alldata$`End Date`)
@@ -57,6 +58,19 @@ glimpse(alldata)
 str(alldata)
 head(alldata)
 tail(alldata)
+
+
+# Bring in DD and then join days per month to get a dataframe with DD/day to then combine with the main alldata
+
+hdd <- read_csv("./data/NYSERDA HDD.csv")
+colnames(hdd)[1] <- "Month"
+cdd <- read_csv("./data/NYSERDA CDD.csv")
+colnames(cdd)[1] <- "Month"
+month_days <- data.frame(Month = c("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"), days = c(31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31))
+
+
+
+
 
 ```
 
@@ -71,6 +85,8 @@ alldata %>% mutate(year(`Start Date`)) %>% group_by(Building, `Meter Type`, Year
 glimpse(annualdata)
 
 
+# Add comsumption per day 
+alldata %>% mutate("day_per_month" = as.numeric(difftime(alldata$`End Date`,alldata$`Start Date`, units = "days")), Cosum_per_day = as.numeric(Usage/day_per_month), "Month" = month(alldata$`End Date`))
 
 
 
