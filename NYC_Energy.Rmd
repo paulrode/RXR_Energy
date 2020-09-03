@@ -81,12 +81,16 @@ month_days <- data.frame(Month = c("January", "February", "March", "April", "May
 #Summerarise by building, and fuel type and year.
 alldata %>% mutate(year(`Start Date`)) %>% group_by(Building, `Meter Type`, Year, Units) %>%
   summarise(Consumpton = sum(Usage)) %>% select(Building, `Meter Type`, Year, Consumpton, Units) -> annualdata
+annualdata %>% ggplot(aes(Year,Consumpton))+ geom_line() + facet_grid(~Building)
 
 glimpse(annualdata)
 
 
 # Add comsumption per day 
-alldata %>% mutate("day_per_month" = as.numeric(difftime(alldata$`End Date`,alldata$`Start Date`, units = "days")), Cosum_per_day = as.numeric(Usage/day_per_month), "Month" = month(alldata$`End Date`))
+alldata %>% mutate("day_per_month" = as.numeric(difftime(alldata$`End Date`,alldata$`Start Date`, units = "days")), Cosum_per_day = as.numeric(Usage/day_per_month), "Month" = month(alldata$`End Date`)) %>% mutate( period = ymd(paste(year(alldata1$`End Date`[2]), month(alldata1$`End Date`[2]), 1, sep='-'))) -> alldata1
+head(alldata1)
+
+alldata1 %>% filter(Building == "WWP" & `Meter Type` == "Electric" & Year == 2019)  %>% ggplot(aes(x = `End Date`, y = Usage, ))+geom_point() 
 
 
 
@@ -99,4 +103,14 @@ alldata %>% mutate("day_per_month" = as.numeric(difftime(alldata$`End Date`,alld
 
 
 ```
+
+#Baseload Electric Tabulation
+```{r, echo=FALSE}
+
+
+
+
+```
+
+
 
