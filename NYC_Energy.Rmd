@@ -22,7 +22,7 @@ output: html_notebook
     library("openxlsx")
     library("XML")
   # Parkage for using data tables for very large data operations
-    library("data.table")
+    #library("data.table")
   #Package for reading fixed width tables
     library("utils")
   # Packages for reading data through API's 
@@ -87,17 +87,17 @@ glimpse(annualdata)
 
 
 # Add comsumption per day 
-alldata %>% mutate("day_per_month" = as.numeric(difftime(alldata$`End Date`,alldata$`Start Date`, units = "days")), Cosum_per_day = as.numeric(Usage/day_per_month), "Month" = month(alldata$`End Date`)) %>% mutate( period = ymd(paste(year(alldata1$`End Date`[2]), month(alldata1$`End Date`[2]), 1, sep='-'))) -> alldata1
+alldata %>% mutate("day_per_month" = as.numeric(difftime(alldata$`End Date`,alldata$`Start Date`, units = "days")), Cosum_per_day = as.numeric(Usage/day_per_month), "Month" = month(`End Date`, label=TRUE, abbr=FALSE)) %>% mutate( period = ymd(paste(year(alldata1$`End Date`[2]), month(alldata1$`End Date`[2]), 1, sep='-'))) -> alldata1
 head(alldata1)
 glimpse(alldata1)
 
-alldata1 %>% filter(Building == "WWP" & `Meter Type` == "Electric")  %>% ggplot(aes(Month, y = Usage, ))+geom_col() 
+unique(alldata1$Building)
+
+alldata1 %>% filter(Building == "237 Park" & `Meter Type` == "Electric")  %>% ggplot(aes(Month, y = Usage, ))+geom_col() 
 
 alldata1 %>% filter(Year == 2019) %>% group_by(Building, `Meter Type`,Year, Month) %>% summarise(Consumption = sum(Usage)) %>% ggplot(aes(Month ,Consumption/1000)) + geom_col() + facet_wrap(~Building)
 
-
-
-
+head(month(alldata$`End Date`, label=TRUE, abbr=FALSE))
 
 
 
