@@ -94,11 +94,11 @@ month_days <- data.frame(Month = c("January", "February", "March", "April", "May
 alldata %>% mutate(Year = year(`Start Date`)) %>% group_by(Building, `Meter Type`, Year, Units) %>% summarise(Consumpton = sum(Usage)) %>% select(Building, `Meter Type`, Year, Consumpton, Units) -> annualdata
 annualdata %>% filter(`Meter Type` == "Electric" & Year > 2016 & Year < 2020) %>% ggplot(aes(x = Year, y = Consumpton))+ geom_line()+ theme(axis.text.x = element_text(angle = 90)) + facet_wrap(~Building)
 
-annualdata %>% filter(`Meter Type` == "Electric" & Year > 2016 & Year < 2020) %>% ggplot(aes(x = Year, y = Consumpton))+ geom_col(position = "dodge", fill="red")+ theme(axis.text.x = element_text(angle = 90)) + facet_wrap(~Building)
+annualdata %>% filter(`Meter Type` == "Electric" & Year > 2016 & Year < 2020) %>% ggplot(aes(x = Year, y = Consumpton))+ geom_boxplot(position = "dodge", fill="red")+ theme(axis.text.x = element_text(angle = 90)) + facet_wrap(~Building)
 
 alldata %>% mutate(Year = year(`Start Date`), Month = month(`Start Date`)) %>% group_by(Building, `Meter Type`, Year, Month, Units) %>% summarise(Consumpton = sum(Usage)) %>% select(Building, `Meter Type`, Year, Month, Consumpton, Units) -> annualdata
 
-annualdata %>% filter(`Meter Type` == "Electric" & Year > 2016 & Year < 2020) %>% ggplot(aes(x = Month, y = Consumpton))+ geom_col(position = "dodge", Year = fill)+ theme(axis.text.x = element_text(angle = 90)) + facet_wrap(~Building)
+annualdata %>% filter(`Meter Type` == "Electric" & Year > 2016 & Year < 2020) %>% ggplot(aes(Building, Consumpton))+ geom_boxplot()+ theme(axis.text.x = element_text(angle = 90))
 
 
 
