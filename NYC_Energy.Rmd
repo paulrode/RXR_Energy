@@ -4,6 +4,18 @@ output: html_notebook
 ---
 
 # Electric   
+Mission forecast electric consumption and cost for 2021. 
+
+Approaches that will be tried. 
+1. look at the historical bill information as a time series
+2. try to deduct the constant load and the variable load. 
+3. Looking at interval data extract the constant load and then report that and the variale load. 
+4. Get rate cases and layer in cost to produce a full budget. 
+
+Mission approach break down historical useage to constant load and variable load. 
+
+
+The Costant load will be that we observed this past April 
 
 ```{r, echo=FALSE, results="hide", include=FALSE}
   # Enviroment 
@@ -46,7 +58,7 @@ if (!file.exists("data")) {
 
 ```
 
-# Data from utility bills 
+# Data from utility bills and degree days from NYSERDA 
 
 ```{r, echo=FALSE}
 #Read in data and fix formats
@@ -79,13 +91,21 @@ month_days <- data.frame(Month = c("January", "February", "March", "April", "May
 
 ```{r, echo=FALSE}
 #Summerarise by building, and fuel type and year.
-alldata %>% mutate(year(`Start Date`)) %>% group_by(Building, `Meter Type`, Year, Units) %>%
-  summarise(Consumpton = sum(Usage)) %>% select(Building, `Meter Type`, Year, Consumpton, Units) -> annualdata
-annualdata %>% ggplot(aes(Year,Consumpton))+ geom_line() + facet_grid(~Building)
+alldata %>% mutate(Year = year(`Start Date`)) %>% group_by(Building, `Meter Type`, Year, Units) %>% summarise(Consumpton = sum(Usage)) %>% select(Building, `Meter Type`, Year, Consumpton, Units) -> annualdata
+annualdata %>% filter(`Meter Type` == "Electric" & Year > 2016 & Year < 2020) %>% ggplot(aes(x = Year, y = Consumpton))+ geom_line()+ theme(axis.text.x = element_text(angle = 90)) + facet_wrap(~Building)
 
-glimpse(annualdata)
+annualdata %>% filter(`Meter Type` == "Electric" & Year > 2016 & Year < 2020) %>% ggplot(aes(x = Year, y = Consumpton))+ geom_col(position = "dodge", fill="red")+ theme(axis.text.x = element_text(angle = 90)) + facet_wrap(~Building)
+
+alldata %>% mutate(Year = year(`Start Date`), Month = month(`Start Date`)) %>% group_by(Building, `Meter Type`, Year, Month, Units) %>% summarise(Consumpton = sum(Usage)) %>% select(Building, `Meter Type`, Year, Month, Consumpton, Units) -> annualdata
+
+annualdata %>% filter(`Meter Type` == "Electric" & Year > 2016 & Year < 2020) %>% ggplot(aes(x = Month, y = Consumpton))+ geom_col(position = "dodge", Year = fill)+ theme(axis.text.x = element_text(angle = 90)) + facet_wrap(~Building)
 
 
+
+```
+
+#Baseload Electric Tabulation
+```{r, echo=FALSE}
 # Add comsumption per day 
 alldata %>% mutate("day_per_month" = as.numeric(difftime(alldata$`End Date`,alldata$`Start Date`, units = "days")), Cosum_per_day = as.numeric(Usage/day_per_month), "Month" = month(`End Date`, label=TRUE, abbr=FALSE)) %>% mutate( period = ymd(paste(year(alldata1$`End Date`[2]), month(alldata1$`End Date`[2]), 1, sep='-'))) -> alldata1
 head(alldata1)
@@ -98,15 +118,6 @@ alldata1 %>% filter(Building == "237 Park" & `Meter Type` == "Electric")  %>% gg
 alldata1 %>% filter(Year == 2019) %>% group_by(Building, `Meter Type`,Year, Month) %>% summarise(Consumption = sum(Usage)) %>% ggplot(aes(Month ,Consumption/1000)) + geom_col() + facet_wrap(~Building)
 
 head(month(alldata$`End Date`, label=TRUE, abbr=FALSE))
-
-
-
-
-
-```
-
-#Baseload Electric Tabulation
-```{r, echo=FALSE}
 
 
 
