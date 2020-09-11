@@ -9,7 +9,7 @@ Mission forecast electric consumption and cost for 2021.
 Approaches that will be tried. 
 1. look at the historical bill information as a time series
 2. try to deduct the constant load and the variable load. 
-3. Looking at interval data extract the constant load and then report that and the variale load. 
+3. Looking at interval data extract the constant load and then report that and the variale load.  
 4. Get rate cases and layer in cost to produce a full budget. 
 
 Mission approach break down historical useage to constant load and variable load. 
