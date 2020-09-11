@@ -60,17 +60,13 @@ if (!file.exists("data")) {
 
 # Data from utility bills and degree days from NYSERDA 
 
-```{r, echo=FALSE}
+```{r, echo="FALSE", results='hide'}
 #Read in data and fix formats
 
 alldata <- read_csv("./data/MASTER METERING DATA(2).csv", col_names = TRUE, col_types = "cccccddcd")
 alldata$`Start Date`<- mdy(alldata$`Start Date`)
 alldata$`End Date` <- mdy(alldata$`End Date`)
-glimpse(alldata)
-str(alldata)
-head(alldata)
-tail(alldata)
-
+alldata %>% mutate(Month = month(`Start Date`)) -> alldata
 
 
 # Bring in DD and then join days per month to get a dataframe with DD/day to then combine with the main alldata
@@ -81,9 +77,8 @@ cdd <- read_csv("./data/NYSERDA CDD.csv")
 colnames(cdd)[1] <- "Month"
 month_days <- data.frame(Month = c(1:12), Name = c("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"), days = c(31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31))
 
-
-
-
+buildings <- unique(alldata$Building)
+Types <- unique(alldata$`Meter Type`)
 
 ```
 
@@ -92,13 +87,18 @@ month_days <- data.frame(Month = c(1:12), Name = c("January", "February", "March
 Take the covid month May or April and tabulate the fixed kWh/day to apply to all other months. then remove that value from all other months to do corlations on weather. 
 
 ```{r, echo=FALSE}
-#Summerarise by building, and fuel type and year.
-alldata %>% mutate(Year = year(`Start Date`)) %>% group_by(Building, `Meter Type`, Year, Units) %>% summarise(Consumpton = sum(Usage)) %>% select(Building, `Meter Type`, Year, Consumpton, Units) -> annualdata
 
-#Add days in month's 
-left_join(annualdata, month_days, by = "Month") -> annualdata
-annualdata %>% select(-Month) %>% mutate("kWh/day" = Consumpton / days) -> annualdata
-head(annualdata)
+alldata %>% filter(Building == "237 Park" & `Meter Type` == "Electric")%>% 
+  group_by(`Meter Number`, `End Date`) %>% summarise(Consumption = sum(Usage)) %>%
+  ggplot(aes(`End Date`,Consumption)) + geom_line() + facet_wrap(~`Meter Number`)
+
+alldata %>% filter(Building == "237 Park" & `Meter Type` == "Electric")%>% 
+  group_by(`Meter Number`, `End Date`) %>% summarise(Consumption = sum(Usage)) %>%
+  ggplot(aes(`Meter Number`,Consumption)) + geom_boxplot() +  theme(axis.text.x = element_text(angle = 90))
+
+
+
+
 ```
 
 
