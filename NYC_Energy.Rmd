@@ -29,7 +29,7 @@ The Costant load will be that we observed this past April
     library("kableExtra") 
     library("xtable")
   # Package for forecasting
-    library("fpp2")
+    library("fable")
   # Packages for reading excel and html files and XML
     library("openxlsx")
     library("XML")
@@ -79,6 +79,18 @@ month_days <- data.frame(Month = c(1:12), Name = c("January", "February", "March
 
 buildings <- unique(alldata$Building)
 Types <- unique(alldata$`Meter Type`)
+
+#Create a df with all days of the year for normarilizing useage per month. 
+
+Dates <- seq(as.Date("2018/1/1"), as.Date("2020/7/15"), by = "day")
+
+alldata_perday <- as.data.frame(Dates)
+alldata_perday %>% mutate(Month = month(Dates))
+
+
+glimpse(alldata_perday)
+head(alldata_perday)
+str(alldata_perday)
 
 ```
 
