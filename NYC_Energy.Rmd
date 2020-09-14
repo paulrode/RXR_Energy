@@ -66,7 +66,8 @@ if (!file.exists("data")) {
 alldata <- read_csv("./data/MASTER METERING DATA(2).csv", col_names = TRUE, col_types = "cccccddcd")
 alldata$`Start Date`<- mdy(alldata$`Start Date`)
 alldata$`End Date` <- mdy(alldata$`End Date`)
-alldata %>% mutate(Month = month(`Start Date`)) -> alldata
+alldata %>% mutate(Month = month(`Start Date`), Period = (alldata$`End Date`- alldata$`Start Date`)) %>% mutate(i = interval(ymd(`Start Date`), ymd(`End Date`)), kWh_Day = Usage /as.numeric(Period)) -> alldata
+UsageData <- select(alldata, 'Meter Type', 'Meter Number', 'i', kWh_Day)
 
 
 # Bring in DD and then join days per month to get a dataframe with DD/day to then combine with the main alldata
@@ -80,22 +81,21 @@ month_days <- data.frame(Month = c(1:12), Name = c("January", "February", "March
 buildings <- unique(alldata$Building)
 Types <- unique(alldata$`Meter Type`)
 
-#Create a df with all days of the year for normarilizing useage per month. 
-
+# Create a df with all days of the year for normarilizing useage per month. 
 Dates <- seq(as.Date("2018/1/1"), as.Date("2020/7/15"), by = "day")
-
 alldata_perday <- as.data.frame(Dates)
-alldata_perday %>% mutate(Month = month(Dates))
+
+# Join usage per day with day of the year. 
+left_join(alldata_perday, UsageData, by "Date %within% i")
 
 
-glimpse(alldata_perday)
-head(alldata_perday)
-str(alldata_perday)
 
+glimpse(alldata)
+glimpse(i)
+head(i)
+     
+     
 ```
-
-
-
 Take the covid month May or April and tabulate the fixed kWh/day to apply to all other months. then remove that value from all other months to do corlations on weather. 
 
 ```{r, echo=FALSE}
