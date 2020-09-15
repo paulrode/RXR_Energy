@@ -59,6 +59,9 @@ if (!file.exists("data")) {
 ```
 
 # Data from utility bills and degree days from NYSERDA 
+Use the following to make a conditional join https://stackoverflow.com/questions/23095896/merging-two-dataframes-on-a-date-range-in-r
+
+
 
 ```{r, echo="FALSE", results='hide'}
 #Read in data and fix formats
