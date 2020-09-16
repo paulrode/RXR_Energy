@@ -89,8 +89,8 @@ Dates <- seq(as.Date("2018/1/1"), as.Date("2020/7/15"), by = "day")
 alldata_perday <- as.data.frame(Dates)
 
 # Join usage per day with day of the year. 
-left_join(alldata_perday, UsageData, by "Date %within% i")
-
+#sqldf("SELECT * FROM df1 JOIN df2 on df1.CustomerId <= df2.CustomerId")
+sqldf("SELECT * FROM alldata_perday JOIN alldata on alldata_perday.Dates <= alldata.`End Date`")
 
 
 glimpse(alldata)
