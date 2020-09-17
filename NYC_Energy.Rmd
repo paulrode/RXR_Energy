@@ -73,6 +73,13 @@ alldata %>% mutate(Month = month(`Start Date`), Period = (alldata$`End Date`- al
 UsageData <- select(alldata, 'Meter Type', 'Meter Number', 'i', kWh_Day)
 
 
+
+
+# Summeraze data so there is one value per daterange
+alldata %>% group_by(i) %>% summarise(`kWh/day` = mean(kWh_Day)) -> lookuptable
+head(lookuptable)
+
+
 # Bring in DD and then join days per month to get a dataframe with DD/day to then combine with the main alldata
 
 hdd <- read_csv("./data/NYSERDA HDD.csv")
@@ -88,15 +95,15 @@ Types <- unique(alldata$`Meter Type`)
 Dates <- seq(as.Date("2018/1/1"), as.Date("2020/7/15"), by = "day")
 alldata_perday <- as.data.frame(Dates)
 
-# Join usage per day with day of the year. 
-#sqldf("SELECT * FROM df1 JOIN df2 on df1.CustomerId <= df2.CustomerId")
-sqldf("SELECT * FROM alldata_perday JOIN alldata on alldata_perday.Dates <= alldata.`End Date`")
+# Using filters and brackets look up kWh/day for each day of the year 
+Dates %>% mutate(`kWh/day` == alldata[`Start Date`<Dates$Date])
+
+ad <- mdy("4/3/2018")
+alldata %>% filter(ad%within%i) %>% select(i, kWh_Day) %>% head()
 
 
-glimpse(alldata)
-glimpse(i)
-head(i)
-     
+head(alldata)
+
      
 ```
 Take the covid month May or April and tabulate the fixed kWh/day to apply to all other months. then remove that value from all other months to do corlations on weather. 
