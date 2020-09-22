@@ -69,17 +69,20 @@ Use the following to make a conditional join https://stackoverflow.com/questions
 alldata <- read_csv("./data/MASTER METERING DATA(2).csv", col_names = TRUE, col_types = "cccccddcd")
 alldata$`Start Date`<- mdy(alldata$`Start Date`)
 alldata$`End Date` <- mdy(alldata$`End Date`)
-alldata %>% mutate(Month = month(`Start Date`), Period = (alldata$`End Date`- alldata$`Start Date`)) %>% mutate(i = interval(ymd(`Start Date`), ymd(`End Date`)), kWh_Day = Usage /as.numeric(Period)) -> alldata
-UsageData <- select(alldata, 'Meter Type', 'Meter Number', 'i', kWh_Day)
-
-
+alldata %>% mutate(Month = month(`Start Date`), Period = (alldata$`End Date`- alldata$`Start Date`)) %>% mutate(i = interval(ymd(`Start Date`), ymd(`End Date`)), Usage_Day = Usage /as.numeric(Period)) -> alldata
+UsageData <- select(alldata, Building,  'Meter Type', 'Meter Number',`Start Date`,`End Date`, i, Usage_Day)
 
 
 # Summeraze data so there is one value per daterange
-alldata %>% group_by(i) %>% summarise(`kWh/day` = mean(kWh_Day)) -> lookuptable
+UsageData %>% group_by(Building, `Meter Type`, i, `Start Date`, `End Date`) %>% summarise(`Usage/day` = mean(Usage_Day)) -> lookuptable
 head(lookuptable)
+glimpse(alldata)
+```
 
 
+
+
+```{r}
 # Bring in DD and then join days per month to get a dataframe with DD/day to then combine with the main alldata
 
 hdd <- read_csv("./data/NYSERDA HDD.csv")
@@ -87,7 +90,10 @@ colnames(hdd)[1] <- "Month"
 cdd <- read_csv("./data/NYSERDA CDD.csv")
 colnames(cdd)[1] <- "Month"
 month_days <- data.frame(Month = c(1:12), Name = c("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"), days = c(31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31))
+```
 
+
+```{r}
 buildings <- unique(alldata$Building)
 Types <- unique(alldata$`Meter Type`)
 
@@ -96,19 +102,14 @@ Dates <- seq(as.Date("2018/1/1"), as.Date("2020/7/15"), by = "day")
 alldata_perday <- as.data.frame(Dates)
 
 # Using filters and brackets look up kWh/day for each day of the year 
-# alldata_perday %>% mutate("kWh/day" == 
-                            
-alldata[alldata$`Start Date` < as.Date("2018-03-23"),]
-alldata[alldata$`Start Date` == alldata_perday$Dates,]
-alldata_perday %>% mutate("kWh_day" == alldata$kWh_Day[(alldata_perday$Dates > alldata$`Start Date` & alldata_perday$Dates < alldata$`End Date`),])
+        
 
-alldata$kWh_Day[alldata_perday$Dates > alldata$`Start Date` & alldata_perday$Dates < alldata$`End Date`]
+ad <- mdy("4/21/2018")
+lookuptable %>% filter(Building == "230 Park" & `Meter Type` == "Electric" & ad %within% i)
 
-ad <- mdy("4/3/2018")
-alldata %>% filter(ad%within%i) %>% select(i, kWh_Day) %>% head()
+alldata_perday$Dates
+glimpse(lookuptable)
 
-
-glimpse(alldata)
 
      
 ```
