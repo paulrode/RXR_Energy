@@ -69,14 +69,14 @@ Use the following to make a conditional join https://stackoverflow.com/questions
 alldata <- read_csv("./data/MASTER METERING DATA(2).csv", col_names = TRUE, col_types = "cccccddcd")
 alldata$`Start Date`<- mdy(alldata$`Start Date`)
 alldata$`End Date` <- mdy(alldata$`End Date`)
-alldata %>% mutate(Month = month(`Start Date`), Period = (alldata$`End Date`- alldata$`Start Date`)) %>% mutate(i = interval(ymd(`Start Date`), ymd(`End Date`)), Usage_Day = Usage /as.numeric(Period)) -> alldata
-UsageData <- select(alldata, Building,  'Meter Type', 'Meter Number',`Start Date`,`End Date`, i, Usage_Day)
+alldata %>% mutate(Month = month(`Start Date`), Period = (alldata$`End Date`- alldata$`Start Date`)) %>% mutate(i = interval(ymd(`Start Date`), ymd(`End Date`))) -> alldata
+
+# Summeraze data by building and utility to make a lookup table
+alldata %>% group_by(Building, `Meter Type`, `Start Date`, `End Date`) %>% summarise(Usage = sum(Usage)) %>% mutate(Usage_Day = Usage / as.numeric(`End Date` - `Start Date`)) -> lookuptable
 
 
-# Summeraze data so there is one value per daterange
-UsageData %>% group_by(Building, `Meter Type`, i, `Start Date`, `End Date`) %>% summarise(`Usage/day` = mean(Usage_Day)) -> lookuptable
-head(lookuptable)
-glimpse(alldata)
+
+
 ```
 
 
@@ -94,21 +94,26 @@ month_days <- data.frame(Month = c(1:12), Name = c("January", "February", "March
 
 
 ```{r}
+
+# Make a data frame with each building and observations for each day of the year.
 buildings <- unique(alldata$Building)
-Types <- unique(alldata$`Meter Type`)
+buildings
+
+
+
 
 # Create a df with all days of the year for normarilizing useage per month. 
 Dates <- seq(as.Date("2018/1/1"), as.Date("2020/7/15"), by = "day")
 alldata_perday <- as.data.frame(Dates)
 
 # Using filters and brackets look up kWh/day for each day of the year 
-        
+  
 
 ad <- mdy("4/21/2018")
 lookuptable %>% filter(Building == "230 Park" & `Meter Type` == "Electric" & ad %within% i)
 
-alldata_perday$Dates
-glimpse(lookuptable)
+
+glimpse(Dates)
 
 
      
