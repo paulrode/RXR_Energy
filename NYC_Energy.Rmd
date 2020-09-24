@@ -95,10 +95,9 @@ month_days <- data.frame(Month = c(1:12), Name = c("January", "February", "March
 
 ```{r}
 
-# Make a data frame with each building and observations for each day of the year.
-buildings <- unique(alldata$Building)
-buildings
-
+lookuptable %>% filter(Building == "61 Bway" & `Meter Type` == "Electric") -> Elect61
+Elect61$`Start Date`[1]
+Elect61$`End Date`[length(Elect61$`End Date`)]
 
 
 
