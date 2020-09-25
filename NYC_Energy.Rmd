@@ -82,7 +82,7 @@ alldata %>% group_by(Building, `Meter Type`, `Start Date`, `End Date`) %>% summa
 
 
 
-```{r}
+```{r, echo="FALSE", results='hide'}
 # Bring in DD and then join days per month to get a dataframe with DD/day to then combine with the main alldata
 
 hdd <- read_csv("./data/NYSERDA HDD.csv")
@@ -95,24 +95,24 @@ month_days <- data.frame(Month = c(1:12), Name = c("January", "February", "March
 
 ```{r}
 
+# Establish end points on a daily dataframe.
 lookuptable %>% filter(Building == "61 Bway" & `Meter Type` == "Electric") -> Elect61
 Elect61$`Start Date`[1]
 Elect61$`End Date`[length(Elect61$`End Date`)]
 
 
-
 # Create a df with all days of the year for normarilizing useage per month. 
-Dates <- seq(as.Date("2018/1/1"), as.Date("2020/7/15"), by = "day")
-alldata_perday <- as.data.frame(Dates)
+Elect61BWay <- seq(as.Date(Elect61$`Start Date`[1]), as.Date(Elect61$`End Date`[length(Elect61$`End Date`)]), by = "day")
+alldata_perday <- as.data.frame(Elect61BWay)
 
 # Using filters and brackets look up kWh/day for each day of the year 
-  
 
-ad <- mdy("4/21/2018")
-lookuptable %>% filter(Building == "230 Park" & `Meter Type` == "Electric" & ad %within% i)
+alldata_perday %>% mutate(Elect61[Elect61BWay > Elect61$`Start Date`& Elect61BWay < Elect61$`End Date`, 6])
+
+Elect61[Elect61BWay > Elect61$`Start Date`& Elect61BWay < Elect61$`End Date`]
 
 
-glimpse(Dates)
+glimpse(Elect61)
 
 
      
