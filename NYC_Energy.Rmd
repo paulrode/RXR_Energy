@@ -99,6 +99,7 @@ month_days <- data.frame(Month = c(1:12), Name = c("January", "February", "March
 lookuptable %>% filter(Building == "61 Bway" & `Meter Type` == "Electric") -> Elect61
 Elect61$`Start Date`[1]
 Elect61$`End Date`[length(Elect61$`End Date`)]
+as.data.frame(Elect61) -> Elect61
 
 
 # Create a df with all days of the year for normarilizing useage per month. 
@@ -106,15 +107,19 @@ Elect61BWay <- seq(as.Date(Elect61$`Start Date`[1]), as.Date(Elect61$`End Date`[
 alldata_perday <- as.data.frame(Elect61BWay)
 
 # Using filters and brackets look up kWh/day for each day of the year 
+alldata_perday %>% mutate(Elect61[Elect61BWay > Elect61$`Start Date` & Elect61BWay < Elect61$`End Date`,6])
 
-alldata_perday %>% mutate(mean(Elect61[Elect61BWay > Elect61$`Start Date`& Elect61BWay < Elect61$`End Date`, 6])) -> alldata_perday
+i = 41
+date <- c("2018-01-13")
 
-Elect61[Elect61BWay > Elect61$`Start Date`& Elect61BWay < Elect61$`End Date`]
+for(i in 1:40) {
+date <- alldata_perday$Elect61BWay[i]
+filter(Elect61, date > `Start Date` & date < `End Date`) %>% select(Usage_Day) -> value[i,2]
 
+}
+value <- as.data.frame(x = 0, y = 0)
 
 glimpse(Elect61)
-
-
      
 ```
 Take the covid month May or April and tabulate the fixed kWh/day to apply to all other months. then remove that value from all other months to do corlations on weather. 
