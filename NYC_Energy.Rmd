@@ -107,19 +107,17 @@ Elect61BWay <- seq(as.Date(Elect61$`Start Date`[1]), as.Date(Elect61$`End Date`[
 alldata_perday <- as.data.frame(Elect61BWay)
 
 # Using filters and brackets look up kWh/day for each day of the year 
-alldata_perday %>% mutate(Elect61[Elect61BWay > Elect61$`Start Date` & Elect61BWay < Elect61$`End Date`,6])
-
-i = 41
-date <- c("2018-01-13")
-
-for(i in 1:40) {
-date <- alldata_perday$Elect61BWay[i]
-filter(Elect61, date > `Start Date` & date < `End Date`) %>% select(Usage_Day) -> value[i,2]
-
+upd <- data.frame(UsagePerDay = seq(1:length(alldata_perday$Elect61BWay)))
+for(i in 1:length(alldata_perday$Elect61BWay)) {
+  date <- alldata_perday$Elect61BWay[i]
+  as.numeric(filter(Elect61, date > `Start Date` & date <= `End Date`) %>% 
+  select(Usage_Day)) %>% as.data.frame()-> upd[i,1]
+  upd[1,1] <- Elect61[1,6]
 }
-value <- as.data.frame(x = 0, y = 0)
 
-glimpse(Elect61)
+alldata_perday <- cbind(alldata_perday, upd)
+head(alldata_perday)
+qplot(alldata_perday$Elect61BWay, alldata_perday$UsagePerDay) 
      
 ```
 Take the covid month May or April and tabulate the fixed kWh/day to apply to all other months. then remove that value from all other months to do corlations on weather. 
