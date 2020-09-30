@@ -95,16 +95,9 @@ month_days <- data.frame(Month = c(1:12), Name = c("January", "February", "March
 
 ```{r}
 
-# Establish end points on a daily dataframe.
+# Create a df with all days of the year for normarilizing useage per month
 lookuptable %>% filter(Building == "61 Bway" & `Meter Type` == "Electric") -> Elect61
-Elect61$`Start Date`[1]
-Elect61$`End Date`[length(Elect61$`End Date`)]
-as.data.frame(Elect61) -> Elect61
-
-
-# Create a df with all days of the year for normarilizing useage per month. 
-Elect61BWay <- seq(as.Date(Elect61$`Start Date`[1]), as.Date(Elect61$`End Date`[length(Elect61$`End Date`)]), by = "day")
-alldata_perday <- as.data.frame(Elect61BWay)
+data.frame(dates = seq(as.Date(Elect61$`Start Date`[1]), as.Date(Elect61$`End Date`[length(Elect61$`End Date`)]), by = "day"))  -> alldata_perday
 
 # Using filters and brackets look up kWh/day for each day of the year 
 upd <- data.frame(UsagePerDay = seq(1:length(alldata_perday$Elect61BWay)))
