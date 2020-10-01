@@ -72,10 +72,7 @@ alldata$`End Date` <- mdy(alldata$`End Date`)
 alldata %>% mutate(Month = month(`Start Date`), Period = (alldata$`End Date`- alldata$`Start Date`)) %>% mutate(i = interval(ymd(`Start Date`), ymd(`End Date`))) -> alldata
 
 # Summeraze data by building and utility to make a lookup table
-alldata %>% group_by(Building, `Meter Type`, `Start Date`, `End Date`) %>% summarise(Usage = sum(Usage)) %>% mutate(Usage_Day = Usage / as.numeric(`End Date` - `Start Date`)) -> lookuptable
-
-
-
+alldata %>% group_by(Building, `Meter Type`, `Start Date`, `End Date`) %>% summarise(Usage = sum(Usage)) %>% mutate(Usage_Day = Usage / as.numeric(`End Date` - `Start Date`)) -> alldata
 
 ```
 
@@ -94,10 +91,22 @@ month_days <- data.frame(Month = c(1:12), Name = c("January", "February", "March
 
 
 ```{r}
+#Make a unique building vector
+buildings <- unique(alldata$Building)
+buildings[2]
 
 # Create a df with all days of the year for normarilizing useage per month
-lookuptable %>% filter(Building == "61 Bway" & `Meter Type` == "Electric") -> Elect61
-data.frame(dates = seq(as.Date(Elect61$`Start Date`[1]), as.Date(Elect61$`End Date`[length(Elect61$`End Date`)]), by = "day"))  -> alldata_perday
+
+i <- 2
+
+set <- data.frame("a", "b", "c")
+
+paste(buildings[i],"Elect")  
+
+
+alldata %>% filter(Building == buildings[i] & `Meter Type` == "Electric") -> Elect
+
+data.frame(dates = seq(as.Date(Elect$`Start Date`[1]), as.Date(Elect$`End Date`[length(Elect$`End Date`)]), by = "day"))  -> alldata_perday
 
 # Using filters and brackets look up kWh/day for each day of the year 
 upd <- data.frame(UsagePerDay = seq(1:length(alldata_perday$Elect61BWay)))
