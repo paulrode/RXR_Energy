@@ -93,15 +93,12 @@ month_days <- data.frame(Month = c(1:12), Name = c("January", "February", "March
 ```{r}
 #Make a unique building vector
 buildings <- unique(alldata$Building)
-buildings[2]
 
 # Create a df with all days of the year for normarilizing useage per month
 
-i <- 2
+i <- 3
 
-set <- data.frame("a", "b", "c")
 
-paste(buildings[i],"Elect")  
 
 
 alldata %>% filter(Building == buildings[i] & `Meter Type` == "Electric") -> Elect
@@ -109,17 +106,19 @@ alldata %>% filter(Building == buildings[i] & `Meter Type` == "Electric") -> Ele
 data.frame(dates = seq(as.Date(Elect$`Start Date`[1]), as.Date(Elect$`End Date`[length(Elect$`End Date`)]), by = "day"))  -> alldata_perday
 
 # Using filters and brackets look up kWh/day for each day of the year 
-upd <- data.frame(UsagePerDay = seq(1:length(alldata_perday$Elect61BWay)))
-for(i in 1:length(alldata_perday$Elect61BWay)) {
-  date <- alldata_perday$Elect61BWay[i]
-  as.numeric(filter(Elect61, date > `Start Date` & date <= `End Date`) %>% 
-  select(Usage_Day)) %>% as.data.frame()-> upd[i,1]
-  upd[1,1] <- Elect61[1,6]
+upd <- data.frame(UsagePerDay = seq(1:length(alldata_perday$dates)))
+for(i in 1:length(alldata_perday$dates)) {
+  date <- alldata_perday$dates[i]
+  as.numeric(filter(Elect, date > `Start Date` & date <= `End Date`)) -> Elect1
+  Elect1[6] -> upd[i,1]
 }
+upd[1,1] <- Elect[1,6]
+cbind(alldata_perday, upd) -> dailyElect
+     
 
-alldata_perday <- cbind(alldata_perday, upd)
-head(alldata_perday)
-qplot(alldata_perday$Elect61BWay, alldata_perday$UsagePerDay) 
+
+
+
      
 ```
 Take the covid month May or April and tabulate the fixed kWh/day to apply to all other months. then remove that value from all other months to do corlations on weather. 
