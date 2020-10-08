@@ -114,6 +114,7 @@ for(i in 1:length(alldata_perday$dates)) {
 }
 upd[1,1] <- Elect[1,6]
 cbind(alldata_perday, upd) -> dailyElect
+dailyElect %>% group_by(year(dates), month(dates)) %>% summarise(kWh = sum(UsagePerDay))
      
 
 
