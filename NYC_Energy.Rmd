@@ -85,9 +85,9 @@ hdd <- read_csv("./data/NYSERDA HDD.csv")
 colnames(hdd)[1] <- "Month"
 cdd <- read_csv("./data/NYSERDA CDD.csv")
 colnames(cdd)[1] <- "Month"
-cdd %>% gather(key = Month, value = "CDD", Month) -> cdd
+cdd %>% select(1:5) %>% gather(key = "key", value = "CDD", -1) -> cdd1
+hdd %>% select(1:5) %>% gather(key = "key", value = "DHH", -1) -> hdd1
 month_days <- data.frame(Month = c(1:12), Name = c("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"), days = c(31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31))
-
 
 
 ```
@@ -117,7 +117,8 @@ for(i in 1:length(alldata_perday$dates)) {
 }
 upd[1,1] <- Elect[1,6]
 cbind(alldata_perday, upd) -> dailyElect
-dailyElect %>% group_by(year(dates), month(dates)) %>% summarise(kWh = sum(UsagePerDay))
+dailyElect %>% group_by(year(dates), month(dates)) %>% summarise(kWh = sum(UsagePerDay)) -> monthlyElect
+
 
 
 
