@@ -102,8 +102,6 @@ buildings <- unique(alldata$Building)
 i <- 3
 
 
-
-
 alldata %>% filter(Building == buildings[i] & `Meter Type` == "Electric") -> Elect
 
 data.frame(dates = seq(as.Date(Elect$`Start Date`[1]), as.Date(Elect$`End Date`[length(Elect$`End Date`)]), by = "day"))  -> alldata_perday
@@ -117,65 +115,18 @@ for(i in 1:length(alldata_perday$dates)) {
 }
 upd[1,1] <- Elect[1,6]
 cbind(alldata_perday, upd) -> dailyElect
-dailyElect %>% group_by(year(dates), month(dates)) %>% summarise(kWh = sum(UsagePerDay)) -> monthlyElect
+dailyElect %>% group_by(year(dates), month(dates)) %>% summarise(kWh = sum(UsagePerDay)) %>%
+mutate("date" = ymd(paste(`year(dates)`, `month(dates)`, 15, sep = '-'))) ->
+monthlyElect
 
-
-
-
-
-
-     
 ```
-Take the covid month May or April and tabulate the fixed kWh/day to apply to all other months. then remove that value from all other months to do corlations on weather. 
+Apply forcast functions
 
 ```{r, echo=FALSE}
-
-alldata %>% filter(Building == "237 Park" & `Meter Type` == "Electric")%>% 
-  group_by(`Meter Number`, `End Date`) %>% summarise(Consumption = sum(Usage)) %>%
-  ggplot(aes(`End Date`,Consumption)) + geom_line() + facet_wrap(~`Meter Number`)
-
-alldata %>% filter(Building == "237 Park" & `Meter Type` == "Electric")%>% 
-  group_by(`Meter Number`, `End Date`) %>% summarise(Consumption = sum(Usage)) %>%
-  ggplot(aes(`Meter Number`,Consumption)) + geom_boxplot() +  theme(axis.text.x = element_text(angle = 90))
-
-
-
-
-```
-
-
-
-annualdata %>% filter(`Meter Type` == "Electric" & Month == 5 ) %>% ggplot(aes(x = Year, y = Consumpton))+ geom_line()+ theme(axis.text.x = element_text(angle = 90)) + facet_wrap(~Building)
-
-annualdata %>% filter(`Meter Type` == "Electric" & Year > 2016 & Year < 2020) %>% ggplot(aes(x = Year, y = Consumpton))+ geom_boxplot(position = "dodge", fill="red")+ theme(axis.text.x = element_text(angle = 90)) + facet_wrap(~Building)
-
-alldata %>% mutate(Year = year(`Start Date`), Month = month(`Start Date`)) %>% group_by(Building, `Meter Type`, Year, Month, Units) %>% summarise(Consumpton = sum(Usage)) %>% select(Building, `Meter Type`, Year, Month, Consumpton, Units) -> annualdata
-
-annualdata %>% filter(`Meter Type` == "Electric" & Year > 2016 & Year < 2020) %>% ggplot(aes(Building, Consumpton))+ geom_boxplot()+ theme(axis.text.x = element_text(angle = 90))
-```
-
-```{r}
-annualdata %>% filter(`Meter Type` == "Electric" & Year > 2016 & Year < 2020 ) %>% ggplot(aes(Building, Consumpton))+ geom_boxplot()+ theme(axis.text.x = element_text(angle = 90))
-glimpse(annualdata)
-
-
-```
-
-#Baseload Electric Tabulation
-```{r, echo=FALSE}
-# Add comsumption per day 
-alldata %>% mutate("day_per_month" = as.numeric(difftime(alldata$`End Date`,alldata$`Start Date`, units = "days")), Cosum_per_day = as.numeric(Usage/day_per_month), "Month" = month(`End Date`, label=TRUE, abbr=FALSE)) %>% mutate( period = ymd(paste(year(alldata1$`End Date`[2]), month(alldata1$`End Date`[2]), 1, sep='-'))) -> alldata1
-head(alldata1)
-glimpse(alldata1)
-
-unique(alldata1$Building)
-
-alldata1 %>% filter(Building == "237 Park" & `Meter Type` == "Electric")  %>% ggplot(aes(Month, y = Usage, ))+geom_col() 
-
-alldata1 %>% filter(Year == 2019) %>% group_by(Building, `Meter Type`,Year, Month) %>% summarise(Consumption = sum(Usage)) %>% ggplot(aes(Month ,Consumption/1000)) + geom_col() + facet_wrap(~Building)
-
-head(month(alldata$`End Date`, label=TRUE, abbr=FALSE))
-
+#trim out covid months 
+monthlyElect %>% filter(date < ymd("2020-03-15")) -> monthlyELectNoCovid
+monthlyELectNoCovid %>% model(ets = ETS(log(kWh))) %>%
+  forecast()
 
 
 
