@@ -93,7 +93,7 @@ month_days <- data.frame(Month = c(1:12), Name = c("January", "February", "March
 ```
 
 
-```{r}
+```{r,  echo=FALSE, results="hide", include=FALSE}
 #Make a unique building vector
 buildings <- unique(alldata$Building)
 
@@ -127,9 +127,10 @@ Apply forcast functions
 monthlyElect %>% filter(date < ymd("2020-03-15")) -> monthlyELectNoCovid
 
 monthlyElect %>% ggplot(aes(x = date, y = kWh)) +
-  line()
+  geom_line() +
+  geom_vline(aes(xintercept=2019))
 
-
+glimpse(monthlyElect)
 
 
 monthlyELectNoCovid %>% model(ets = ETS(log(kWh))) %>%
