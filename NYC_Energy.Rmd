@@ -88,10 +88,8 @@ hdd %>% select(1:5) %>% gather(key = "key", value = "HDD", -1) %>%
 
 cdd <- read_csv("./data/NYSERDA CDD.csv")
 colnames(cdd)[1] <- "Month"
-cdd %>% select(1:5) %>% gather(key = "key", value = "CDD", -1) -> cdd
-
-month_days <- data.frame(month = c(1:12), name = c("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"), days = c(31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31))
-
+cdd %>% select(1:5) %>% gather(key = "key", value = "CDD", -1) %>%
+   mutate(datekey = paste(Month,key)) %>% select(datekey, CDD, -Month,-key) -> cdd
 
 ```
 
@@ -123,20 +121,33 @@ mutate("date" = ymd(paste(`year(dates)`, `month(dates)`, 15, sep = '-')))  ->
 monthlyElect
 monthlyElect %>% mutate("month" = month(date, label = TRUE, abbr = FALSE)) -> monthlyElect
 colnames(monthlyElect) = c("year", "month1", "kWh", "date", "month")
-monthlyElect %>% mutate(datekey = paste(month,year)) %>% select(datekey, kWh, date) %>% left_join(monthlyElect, hdd, by = "datekey" ) -> monthlyElect
+monthlyElect <- as.data.frame(monthlyElect)
+
+monthlyElect %>% mutate(datekey = paste(`month`,`year`)) -> monthlyElect
+
+monthlyElect %>% select(datekey, kWh, date) -> monthlyElect
+
+monthlyElect %>% left_join(hdd, by = "datekey" ) -> monthlyElect
+monthlyElect %>% left_join(cdd, by = "datekey") -> monthlyElect
 
 #trim out covid months 
 monthlyElect %>% filter(date < ymd("2020-03-15")) -> monthlyELectNoCovid
 
+
+
+
 ```
-Apply forcast functions
+
 
 ```{r, echo=FALSE}
-monthlyElect <- monthlyElect[-1,]
+monthlyELectNoCovid <- monthlyELectNoCovid[-1,]
 
-monthlyElect %>% ggplot(aes(x = date, y = kWh)) +
-  geom_col() +
-  geom_rect(aes(xmin = date[1], ymin = 0, xmax = date[length(monthlyElect$date) ], ymax = min(monthlyElect[-1,]$kWh)), color = "blue", fill = "blue", alpha = 0.01)
+monthlyELectNoCovid %>% ggplot(aes(x = date, y = kWh)) +
+  geom_col() 
+  
+  
+  
+  geom_rect(aes(xmin = date[1], ymin = 0, xmax = date[length(monthlyELectNoCovid$date) ], ymax = min(monthlyElect[-1,]$kWh)), color = "blue", fill = "blue", alpha = 0.01)
 
 
 
