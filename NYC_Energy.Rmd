@@ -129,6 +129,8 @@ monthlyElect %>% select(datekey, kWh, date) -> monthlyElect
 
 monthlyElect %>% left_join(hdd, by = "datekey" ) -> monthlyElect
 monthlyElect %>% left_join(cdd, by = "datekey") -> monthlyElect
+monthlyElect[-1,] -> monthlyElect
+  monthlyElect %>% mutate(varriable = kWh - min(monthlyElect$kWh)) -> monthlyElect
 
 #trim out covid months 
 monthlyElect %>% filter(date < ymd("2020-03-15")) -> monthlyELectNoCovid
@@ -142,8 +144,8 @@ monthlyElect %>% filter(date < ymd("2020-03-15")) -> monthlyELectNoCovid
 ```{r, echo=FALSE}
 monthlyELectNoCovid <- monthlyELectNoCovid[-1,]
 
-monthlyELectNoCovid %>% ggplot(aes(x = date, y = kWh)) +
-  geom_col() 
+monthlyELectNoCovid %>% ggplot()) +
+  geom_line(aes(x = date, y = cdd))
   
   
   
