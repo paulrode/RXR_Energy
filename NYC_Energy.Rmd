@@ -23,6 +23,7 @@ The Costant load will be that we observed this past April
   #Set up enviroment for R scrip  
   # Packages for tidyverse 
     library("tidyverse")
+    library("gridExtra")
     library("lubridate")
   # Package for building tables in markdown and notebook 
     library("knitr")
@@ -131,11 +132,11 @@ monthlyElect %>% left_join(hdd, by = "datekey" ) -> monthlyElect
 monthlyElect %>% left_join(cdd, by = "datekey") -> monthlyElect
 monthlyElect[-1,] -> monthlyElect
   monthlyElect %>% mutate(varriable = kWh - min(monthlyElect$kWh)) -> monthlyElect
-
+monthlyELectNoCovid[is.na(monthlyELectNoCovid)] = 0 # get rid of NA's
+  
+  
 #trim out covid months 
 monthlyElect %>% filter(date < ymd("2020-03-15")) -> monthlyELectNoCovid
-
-
 
 
 ```
@@ -144,16 +145,14 @@ monthlyElect %>% filter(date < ymd("2020-03-15")) -> monthlyELectNoCovid
 ```{r, echo=FALSE}
 monthlyELectNoCovid <- monthlyELectNoCovid[-1,]
 
-monthlyELectNoCovid %>% ggplot()) +
-  geom_line(aes(x = date, y = cdd))
+plot1 <- ggplot(monthlyELectNoCovid, aes(date, varriable)) +
+  geom_col() 
+
+plot2 <- ggplot(monthlyELectNoCovid, aes(date, CDD)) +  
+    geom_line()
+
+grid.arrange(plot1, plot2, nrow=2, ncol=1)
   
-  
-  
-  geom_rect(aes(xmin = date[1], ymin = 0, xmax = date[length(monthlyELectNoCovid$date) ], ymax = min(monthlyElect[-1,]$kWh)), color = "blue", fill = "blue", alpha = 0.01)
-
-
-
-
 
 
 ```
