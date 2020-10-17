@@ -86,11 +86,13 @@ hdd <- read_csv("./data/NYSERDA HDD.csv")
 colnames(hdd)[1] <- "Month"
 hdd %>% select(1:5) %>% gather(key = "key", value = "HDD", -1) %>%
   mutate(datekey = paste(Month,key)) %>% select(datekey, HDD, -Month,-key) -> hdd
+hdd[is.na(hdd)] = 0 # get rid of NA's
 
 cdd <- read_csv("./data/NYSERDA CDD.csv")
 colnames(cdd)[1] <- "Month"
 cdd %>% select(1:5) %>% gather(key = "key", value = "CDD", -1) %>%
    mutate(datekey = paste(Month,key)) %>% select(datekey, CDD, -Month,-key) -> cdd
+cdd[is.na(cdd)] = 0 # get rid of NA's
 
 ```
 
@@ -132,7 +134,6 @@ monthlyElect %>% left_join(hdd, by = "datekey" ) -> monthlyElect
 monthlyElect %>% left_join(cdd, by = "datekey") -> monthlyElect
 monthlyElect[-1,] -> monthlyElect
   monthlyElect %>% mutate(varriable = kWh - min(monthlyElect$kWh)) -> monthlyElect
-monthlyELectNoCovid[is.na(monthlyELectNoCovid)] = 0 # get rid of NA's
   
   
 #trim out covid months 
@@ -151,9 +152,17 @@ plot1 <- ggplot(monthlyELectNoCovid, aes(date, varriable)) +
 plot2 <- ggplot(monthlyELectNoCovid, aes(date, CDD)) +  
     geom_line()
 
-grid.arrange(plot1, plot2, nrow=2, ncol=1)
-  
+plot3 <- ggplot(monthlyELectNoCovid, aes(date, HDD)) +
+  geom_line()
 
+grid.arrange(plot1, plot2, plot3, nrow= 3, ncol=1)
+  
+plot(monthlyELectNoCovid$CDD, monthlyELectNoCovid$varriable)
+plot(monthlyELectNoCovid$HDD, monthlyELectNoCovid$varriable)
+plot(monthlyELectNoCovid$HDD+monthlyELectNoCovid$CDD, monthlyELectNoCovid$varriable)
+
+
+lm(kWh ~ CDD, monthlyELectNoCovid, subset = (month(date)>5 & month(date) <10))
 
 ```
 
