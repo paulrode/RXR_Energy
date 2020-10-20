@@ -75,6 +75,10 @@ alldata %>% mutate(Month = month(`Start Date`), Period = (alldata$`End Date`- al
 # Summeraze data by building and utility to make a lookup table
 alldata %>% group_by(Building, `Meter Type`, `Start Date`, `End Date`) %>% summarise(Usage = sum(Usage)) %>% mutate(Usage_Day = Usage / as.numeric(`End Date` - `Start Date`)) -> alldata
 
+#Set up main utility data collection table 
+UtilityData <- data.frame(building = "builidng", datekey = "January 2017", kWh = 1, date = ymd("2017-01-05"), HDD = 1, CDD = 1, varriable = 1 )
+UtilityData[-1,] -> UtilityData
+
 ```
 
 
@@ -103,10 +107,9 @@ buildings <- unique(alldata$Building)
 
 # Create a df with all days of the year for normarilizing useage per month
 
-i <- 3
+for(j in 1:length(alldata$Building)) {
 
-
-alldata %>% filter(Building == buildings[i] & `Meter Type` == "Electric") -> Elect
+alldata %>% filter(Building == buildings[j] & `Meter Type` == "Electric") -> Elect
 
 data.frame(dates = seq(as.Date(Elect$`Start Date`[1]), as.Date(Elect$`End Date`[length(Elect$`End Date`)]), by = "day"))  -> alldata_perday
 
@@ -122,22 +125,28 @@ cbind(alldata_perday, upd) -> dailyElect
 dailyElect %>% group_by(year(dates), month(dates)) %>% summarise(kWh = sum(UsagePerDay)) %>%
 mutate("date" = ymd(paste(`year(dates)`, `month(dates)`, 15, sep = '-')))  ->
 monthlyElect
-monthlyElect %>% mutate("month" = month(date, label = TRUE, abbr = FALSE)) -> monthlyElect
-colnames(monthlyElect) = c("year", "month1", "kWh", "date", "month")
+monthlyElect %>% mutate("month" = month(date, label = TRUE, abbr = FALSE)) %>%
+  mutate("building" = buildings[j]) -> monthlyElect
+colnames(monthlyElect) = c("year", "month1", "kWh", "date", "month", "building")
 monthlyElect <- as.data.frame(monthlyElect)
 
 monthlyElect %>% mutate(datekey = paste(`month`,`year`)) -> monthlyElect
 
-monthlyElect %>% select(datekey, kWh, date) -> monthlyElect
+monthlyElect %>% select(building, datekey, kWh, date) -> monthlyElect
 
 monthlyElect %>% left_join(hdd, by = "datekey" ) -> monthlyElect
 monthlyElect %>% left_join(cdd, by = "datekey") -> monthlyElect
 monthlyElect[-1,] -> monthlyElect
   monthlyElect %>% mutate(varriable = kWh - min(monthlyElect$kWh)) -> monthlyElect
+
+rbind(UtilityData, monthlyElect) -> UtilityData 
   
+}  
   
 #trim out covid months 
 monthlyElect %>% filter(date < ymd("2020-03-15")) -> monthlyELectNoCovid
+
+
 
 
 ```
