@@ -107,7 +107,9 @@ buildings <- unique(alldata$Building)
 
 # Create a df with all days of the year for normarilizing useage per month
 
-for(j in 1:length(alldata$Building)) {
+#for(j in 6:length(alldata$Building)) {
+
+j <- 5
 
 alldata %>% filter(Building == buildings[j] & `Meter Type` == "Electric") -> Elect
 
@@ -141,7 +143,7 @@ monthlyElect[-1,] -> monthlyElect
 
 rbind(UtilityData, monthlyElect) -> UtilityData 
   
-}  
+#}  
   
 #trim out covid months 
 monthlyElect %>% filter(date < ymd("2020-03-15")) -> monthlyELectNoCovid
