@@ -114,7 +114,7 @@ j <- 5
 alldata %>% filter(Building == buildings[j] & `Meter Type` == "Electric") -> Elect
 
 data.frame(dates = seq(as.Date(Elect$`Start Date`[1]), as.Date(Elect$`End Date`[length(Elect$`End Date`)]), by = "day"))  -> alldata_perday
-
+  
 # Using filters and brackets look up kWh/day for each day of the year 
 upd <- data.frame(UsagePerDay = seq(1:length(alldata_perday$dates)))
 for(i in 1:length(alldata_perday$dates)) {
