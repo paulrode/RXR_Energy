@@ -75,6 +75,10 @@ alldata %>% mutate(Month = month(`Start Date`), Period = (alldata$`End Date`- al
 # Summeraze data by building and utility to make a lookup table
 alldata %>% group_by(Building, `Meter Type`, `Start Date`, `End Date`) %>% summarise(Usage = sum(Usage)) %>% mutate(Usage_Day = Usage / as.numeric(`End Date` - `Start Date`)) -> alldata
 
+alldata %>% group_by(Building, `Meter Type`, `End Date`) %>% summarise(Usage = sum(Usage), Usage_Day=sum(Usage_Day)) -> alldata
+
+
+
 #Set up main utility data collection table 
 UtilityData <- data.frame(building = "builidng", datekey = "January 2017", kWh = 1, date = ymd("2017-01-05"), HDD = 1, CDD = 1, varriable = 1 )
 UtilityData[-1,] -> UtilityData
@@ -113,7 +117,7 @@ j <- 5
 
 alldata %>% filter(Building == buildings[j] & `Meter Type` == "Electric") -> Elect
 
-data.frame(dates = seq(as.Date(Elect$`Start Date`[1]), as.Date(Elect$`End Date`[length(Elect$`End Date`)]), by = "day"))  -> alldata_perday
+data.frame(dates = seq(as.Date(Elect$`End Date`[1]), as.Date(Elect$`End Date`[length(Elect$`End Date`)]), by = "day"))  -> alldata_perday
   
 # Using filters and brackets look up kWh/day for each day of the year 
 upd <- data.frame(UsagePerDay = seq(1:length(alldata_perday$dates)))
