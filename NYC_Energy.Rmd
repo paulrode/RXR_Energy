@@ -107,46 +107,40 @@ buildings <- unique(alldata$Building)
 
 # Create a df with all days of the year for normarilizing useage per month
 
-#for(j in 6:length(alldata$Building)) {
+for(j in 1:length(alldata$Building)) {
 
-j <- 5
+  alldata %>% filter(Building == buildings[j] & `Meter Type` == "Electric") -> Elect
 
-alldata %>% filter(Building == buildings[j] & `Meter Type` == "Electric") -> Elect
-
-data.frame(dates = seq(as.Date(Elect$`End Date`[1]), as.Date(Elect$`End Date`[length(Elect$`End Date`)]), by = "day"))  -> alldata_perday
+  data.frame(dates = seq(as.Date(Elect$`End Date`[1]), as.Date(Elect$`End Date`[length(Elect$`End Date`)]), by = "day"))  -> alldata_perday
   
-# Using filters and brackets look up kWh/day for each day of the year 
-upd <- data.frame(UsagePerDay = seq(1:length(alldata_perday$dates)))
-for(i in 1:length(alldata_perday$dates)) {
-  date <- alldata_perday$dates[i]
-  filter(Elect, date > `Start Date` & date <= `End Date`) -> Elect1
-  sum(Elect1[6]) -> upd[i,1]
-}
-upd[1,1] <- Elect[1,6]
-cbind(alldata_perday, upd) -> dailyElect
-dailyElect %>% group_by(year(dates), month(dates)) %>% summarise(kWh = sum(UsagePerDay)) %>%
-mutate("date" = ymd(paste(`year(dates)`, `month(dates)`, 15, sep = '-')))  ->
-monthlyElect
-monthlyElect %>% mutate("month" = month(date, label = TRUE, abbr = FALSE)) %>%
+  # Using filters and brackets look up kWh/day for each day of the year 
+  upd <- data.frame(UsagePerDay = seq(1:length(alldata_perday$dates)))
+    for(i in 1:length(alldata_perday$dates)) {
+    date <- alldata_perday$dates[i]
+    filter(Elect, date > `Start Date` & date <= `End Date`) -> Elect1
+    sum(Elect1[6]) -> upd[i,1]
+    }
+  upd[1,1] <- Elect[1,6]
+  cbind(alldata_perday, upd) -> dailyElect
+  dailyElect %>% group_by(year(dates), month(dates)) %>% summarise(kWh = sum(UsagePerDay)) %>%
+  mutate("date" = ymd(paste(`year(dates)`, `month(dates)`, 15, sep = '-')))  ->
+  monthlyElect
+  monthlyElect %>% mutate("month" = month(date, label = TRUE, abbr = FALSE)) %>%
   mutate("building" = buildings[j]) -> monthlyElect
-colnames(monthlyElect) = c("year", "month1", "kWh", "date", "month", "building")
-monthlyElect <- as.data.frame(monthlyElect)
-
-monthlyElect %>% mutate(datekey = paste(`month`,`year`)) -> monthlyElect
-
-monthlyElect %>% select(building, datekey, kWh, date) -> monthlyElect
-
-monthlyElect %>% left_join(hdd, by = "datekey" ) -> monthlyElect
-monthlyElect %>% left_join(cdd, by = "datekey") -> monthlyElect
-monthlyElect[-1,] -> monthlyElect
+  colnames(monthlyElect) = c("year", "month1", "kWh", "date", "month", "building")
+  monthlyElect <- as.data.frame(monthlyElect)
+  monthlyElect %>% mutate(datekey = paste(`month`,`year`)) -> monthlyElect
+  monthlyElect %>% select(building, datekey, kWh, date) -> monthlyElect
+  monthlyElect %>% left_join(hdd, by = "datekey" ) -> monthlyElect
+  monthlyElect %>% left_join(cdd, by = "datekey") -> monthlyElect
+  monthlyElect[-1,] -> monthlyElect
   monthlyElect %>% mutate(varriable = kWh - min(monthlyElect$kWh)) -> monthlyElect
-
-rbind(UtilityData, monthlyElect) -> UtilityData 
+  rbind(UtilityData, monthlyElect) -> UtilityData 
   
-#}  
+}  
   
 #trim out covid months 
-monthlyElect %>% filter(date < ymd("2020-03-15")) -> monthlyELectNoCovid
+#monthlyElect %>% filter(date < ymd("2020-03-15")) -> monthlyELectNoCovid
 
 
 
