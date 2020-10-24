@@ -107,7 +107,7 @@ buildings <- unique(alldata$Building)
 
 # Create a df with all days of the year for normarilizing useage per month
 
-for(j in 1:length(alldata$Building)) {
+for(j in 1:length(buildings)) {
 
   alldata %>% filter(Building == buildings[j] & `Meter Type` == "Electric") -> Elect
 
@@ -139,26 +139,27 @@ for(j in 1:length(alldata$Building)) {
   
 }  
   
-#trim out covid months 
-#monthlyElect %>% filter(date < ymd("2020-03-15")) -> monthlyELectNoCovid
-
-
+#Trim out covid months 
+UtilityData %>% filter(date < ymd("2020-03-15")) -> UtilityDataNoCovid
 
 
 ```
 
 
 ```{r, echo=FALSE}
-monthlyELectNoCovid <- monthlyELectNoCovid[-1,]
 
-plot1 <- ggplot(monthlyELectNoCovid, aes(date, varriable)) +
-  geom_col() 
+# Do a stright plot of consumption 
+ggplot(UtilityDataNoCovid, aes(date, varriable, color = "green")) +
+  geom_line() +
+  facet_grid(building~.)
 
-plot2 <- ggplot(monthlyELectNoCovid, aes(date, CDD)) +  
-    geom_line()
+# Plot the linear model of summer months and CDD
+UtilityDataNoCovid %>% ggplot( aes(CDD, varriable, color = "green")) +
+    geom_point() +
+    geom_smooth(method=lm , color="red", se=TRUE) +
+    facet_grid(building~.)
 
-plot3 <- ggplot(monthlyELectNoCovid, aes(date, HDD)) +
-  geom_line()
+
 
 grid.arrange(plot1, plot2, plot3, nrow= 3, ncol=1)
   
