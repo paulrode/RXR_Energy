@@ -75,10 +75,6 @@ alldata %>% mutate(Month = month(`Start Date`), Period = (alldata$`End Date`- al
 # Summeraze data by building and utility to make a lookup table
 alldata %>% group_by(Building, `Meter Type`, `Start Date`, `End Date`) %>% summarise(Usage = sum(Usage)) %>% mutate(Usage_Day = Usage / as.numeric(`End Date` - `Start Date`)) -> alldata
 
-alldata %>% group_by(Building, `Meter Type`, `End Date`) %>% summarise(Usage = sum(Usage), Usage_Day=sum(Usage_Day)) -> alldata
-
-
-
 #Set up main utility data collection table 
 UtilityData <- data.frame(building = "builidng", datekey = "January 2017", kWh = 1, date = ymd("2017-01-05"), HDD = 1, CDD = 1, varriable = 1 )
 UtilityData[-1,] -> UtilityData
@@ -123,8 +119,8 @@ data.frame(dates = seq(as.Date(Elect$`End Date`[1]), as.Date(Elect$`End Date`[le
 upd <- data.frame(UsagePerDay = seq(1:length(alldata_perday$dates)))
 for(i in 1:length(alldata_perday$dates)) {
   date <- alldata_perday$dates[i]
-  as.numeric(filter(Elect, date > `Start Date` & date <= `End Date`)) -> Elect1
-  Elect1[6] -> upd[i,1]
+  filter(Elect, date > `Start Date` & date <= `End Date`) -> Elect1
+  sum(Elect1[6]) -> upd[i,1]
 }
 upd[1,1] <- Elect[1,6]
 cbind(alldata_perday, upd) -> dailyElect
