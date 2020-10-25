@@ -63,7 +63,6 @@ if (!file.exists("data")) {
 Use the following to make a conditional join https://stackoverflow.com/questions/23095896/merging-two-dataframes-on-a-date-range-in-r
 
 
-
 ```{r, echo="FALSE", results='hide'}
 #Read in data and fix formats
 
@@ -79,12 +78,6 @@ alldata %>% group_by(Building, `Meter Type`, `Start Date`, `End Date`) %>% summa
 UtilityData <- data.frame(building = "builidng", datekey = "January 2017", kWh = 1, date = ymd("2017-01-05"), HDD = 1, CDD = 1, varriable = 1 )
 UtilityData[-1,] -> UtilityData
 
-```
-
-
-
-
-```{r, echo = "FALSE", results = 'hide'}
 # Bring in DD and then join days per month to get a dataframe with DD/day to then combine with the main alldata
 hdd <- read_csv("./data/NYSERDA HDD.csv")
 colnames(hdd)[1] <- "Month"
@@ -98,21 +91,34 @@ cdd %>% select(1:5) %>% gather(key = "key", value = "CDD", -1) %>%
    mutate(datekey = paste(Month,key)) %>% select(datekey, CDD, -Month,-key) -> cdd
 cdd[is.na(cdd)] = 0 # get rid of NA's
 
+
 ```
 
 
+
+
+
 ```{r,  echo=FALSE, results="hide", include=FALSE}
-#Make a unique building vector
+#Make a unique building and meter type vectors
 buildings <- unique(alldata$Building)
+EnergyTypes <- unique(alldata$`Meter Type`)
 
 # Create a df with all days of the year for normarilizing useage per month
 
 for(j in 1:length(buildings)) {
 
-  alldata %>% filter(Building == buildings[j] & `Meter Type` == "Electric") -> Elect
+# Make meter type vector
+  alldata %>% filter(Building == buildings[j]) -> Types
+  unique(Types$`Meter Type`) -> Types
+  
+  for(l in 1:length(Types)) {
+  
+alldata %>% filter(Building == buildings[j] & Types[l] == "Electric") ->   Elect
 
   data.frame(dates = seq(as.Date(Elect$`End Date`[1]), as.Date(Elect$`End Date`[length(Elect$`End Date`)]), by = "day"))  -> alldata_perday
-  
+ 
+  # for loop for meter types goes here!!!!!!!!!!!
+   
   # Using filters and brackets look up kWh/day for each day of the year 
   upd <- data.frame(UsagePerDay = seq(1:length(alldata_perday$dates)))
     for(i in 1:length(alldata_perday$dates)) {
@@ -137,7 +143,7 @@ for(j in 1:length(buildings)) {
   monthlyElect %>% mutate(varriable = kWh - min(monthlyElect$kWh)) -> monthlyElect
   rbind(UtilityData, monthlyElect) -> UtilityData 
   
-}  
+}  }
   
 #Trim out covid months 
 UtilityData %>% filter(date < ymd("2020-03-15")) -> UtilityDataNoCovid
@@ -159,16 +165,12 @@ UtilityDataNoCovid %>% ggplot( aes(CDD, varriable, color = "green")) +
     geom_smooth(method=lm , color="red", se=TRUE) +
     facet_grid(building~.)
 
+k <- 15
+UtilityDataNoCovid %>% filter(month(date) > 4 & month(date) < 11 & building == buildings[k]) %>% ggplot( aes(CDD, varriable, color = "green")) +
+    geom_point() +
+    geom_smooth(method=lm , color="red", se=TRUE) +
+    facet_grid(building~.)
 
-
-grid.arrange(plot1, plot2, plot3, nrow= 3, ncol=1)
-  
-plot(monthlyELectNoCovid$CDD, monthlyELectNoCovid$varriable)
-plot(monthlyELectNoCovid$HDD, monthlyELectNoCovid$varriable)
-plot(monthlyELectNoCovid$HDD+monthlyELectNoCovid$CDD, monthlyELectNoCovid$varriable)
-
-
-lm(kWh ~ CDD, monthlyELectNoCovid, subset = (month(date)>5 & month(date) <10))
 
 ```
 
