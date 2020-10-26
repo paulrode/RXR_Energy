@@ -101,10 +101,8 @@ cdd[is.na(cdd)] = 0 # get rid of NA's
 ```{r,  echo=FALSE, results="hide", include=FALSE}
 #Make a unique building and meter type vectors
 buildings <- unique(alldata$Building)
-EnergyTypes <- unique(alldata$`Meter Type`)
 
 # Create a df with all days of the year for normarilizing useage per month
-
 for(j in 1:length(buildings)) {
 
 # Make meter type vector
@@ -113,20 +111,20 @@ for(j in 1:length(buildings)) {
   
   for(l in 1:length(Types)) {
   
-alldata %>% filter(Building == buildings[j] & Types[l] == "Electric") ->   Elect
+filter(alldata, Building == buildings[j] & `Meter Type` == Types[l]) ->   Elect
 
-  data.frame(dates = seq(as.Date(Elect$`End Date`[1]), as.Date(Elect$`End Date`[length(Elect$`End Date`)]), by = "day"))  -> alldata_perday
+alldata_perday <-  data.frame(dates = seq((Elect$`End Date`[1]), (Elect$`End Date`[length(Elect$`End Date`)]), by = "day"))  
  
-  # for loop for meter types goes here!!!!!!!!!!!
-   
-  # Using filters and brackets look up kWh/day for each day of the year 
-  upd <- data.frame(UsagePerDay = seq(1:length(alldata_perday$dates)))
+# Using filters and brackets look up kWh/day for each day of the year 
+upd <- data.frame(UsagePerDay = seq(1:length(alldata_perday$dates)))
+  
     for(i in 1:length(alldata_perday$dates)) {
     date <- alldata_perday$dates[i]
     filter(Elect, date > `Start Date` & date <= `End Date`) -> Elect1
     sum(Elect1[6]) -> upd[i,1]
     }
-  upd[1,1] <- Elect[1,6]
+  
+upd[1,1] <- Elect[1,6]
   cbind(alldata_perday, upd) -> dailyElect
   dailyElect %>% group_by(year(dates), month(dates)) %>% summarise(kWh = sum(UsagePerDay)) %>%
   mutate("date" = ymd(paste(`year(dates)`, `month(dates)`, 15, sep = '-')))  ->
@@ -143,7 +141,7 @@ alldata %>% filter(Building == buildings[j] & Types[l] == "Electric") ->   Elect
   monthlyElect %>% mutate(varriable = kWh - min(monthlyElect$kWh)) -> monthlyElect
   rbind(UtilityData, monthlyElect) -> UtilityData 
   
-}  }
+}}
   
 #Trim out covid months 
 UtilityData %>% filter(date < ymd("2020-03-15")) -> UtilityDataNoCovid
