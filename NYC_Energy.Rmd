@@ -126,19 +126,19 @@ upd <- data.frame(UsagePerDay = seq(1:length(alldata_perday$dates)))
   
 upd[1,1] <- Elect[1,6]
   cbind(alldata_perday, upd) -> dailyElect
-  dailyElect %>% group_by(year(dates), month(dates)) %>% summarise(kWh = sum(UsagePerDay)) %>%
+  dailyElect %>% group_by(year(dates), month(dates)) %>% summarise(useage = sum(UsagePerDay)) %>%
   mutate("date" = ymd(paste(`year(dates)`, `month(dates)`, 15, sep = '-')))  ->
   monthlyElect
   monthlyElect %>% mutate("month" = month(date, label = TRUE, abbr = FALSE)) %>%
-  mutate("building" = buildings[j]) -> monthlyElect
-  colnames(monthlyElect) = c("year", "month1", "kWh", "date", "month", "building")
+  mutate("building" = buildings[j]) %>% mutate("type" = Types[l]) -> monthlyElect
+  colnames(monthlyElect) = c("year", "month1", "useage", "date", "month", "building", "type")
   monthlyElect <- as.data.frame(monthlyElect)
   monthlyElect %>% mutate(datekey = paste(`month`,`year`)) -> monthlyElect
-  monthlyElect %>% select(building, datekey, kWh, date) -> monthlyElect
+  monthlyElect %>% select(building, type, datekey, useage, date) -> monthlyElect
   monthlyElect %>% left_join(hdd, by = "datekey" ) -> monthlyElect
   monthlyElect %>% left_join(cdd, by = "datekey") -> monthlyElect
   monthlyElect[-1,] -> monthlyElect
-  monthlyElect %>% mutate(varriable = kWh - min(monthlyElect$kWh)) -> monthlyElect
+  monthlyElect %>% mutate(varriable = useage - min(monthlyElect$useage)) -> monthlyElect
   rbind(UtilityData, monthlyElect) -> UtilityData 
   
 }}
