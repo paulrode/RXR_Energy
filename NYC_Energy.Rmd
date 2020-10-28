@@ -101,6 +101,7 @@ cdd[is.na(cdd)] = 0 # get rid of NA's
 ```{r,  echo=FALSE, results="hide", include=FALSE}
 #Make a unique building and meter type vectors
 buildings <- unique(alldata$Building)
+units <- data.frame("type" = unique(alldata$`Meter Type`), "unit" = c("kWh", "MLbs", "hcf", "hcf", "hcf", "gal", "Therms", "hcf"))
 
 # Create a df with all days of the year for normarilizing useage per month
 for(j in 1:length(buildings)) {
@@ -142,10 +143,12 @@ upd[1,1] <- Elect[1,6]
   rbind(UtilityData, monthlyElect) -> UtilityData 
   
 }}
-  
+
+#add units
+UtilityData %>% left_join(units) -> UtilityData
+
 #Trim out covid months 
 UtilityData %>% filter(date < ymd("2020-03-15")) -> UtilityDataNoCovid
-
 
 ```
 
@@ -163,12 +166,14 @@ UtilityDataNoCovid %>% ggplot( aes(CDD, varriable, color = "green")) +
     geom_smooth(method=lm , color="red", se=TRUE) +
     facet_grid(building~.)
 
-k <- 15
-UtilityDataNoCovid %>% filter(month(date) > 4 & month(date) < 11 & building == buildings[k]) %>% ggplot( aes(CDD, varriable, color = "green")) +
-    geom_point() +
-    geom_smooth(method=lm , color="red", se=TRUE) +
-    facet_grid(building~.)
+k <- 1
+#Heating
+UtilityDataNoCovid %>% filter(building == buildings[k] & type == "Steam") %>% filter(month(date) < 4 | month(date) > 10  ) %>% ggplot( aes(HDD, varriable, color = "blue")) +    geom_point() +
+    geom_smooth(method=lm , color="red", se=TRUE) 
 
+#Cooling 
+UtilityDataNoCovid %>% filter(building == buildings[k] & type == "Steam") %>% filter(month(date) > 4 & month(date) < 10  ) %>% ggplot( aes(HDD, varriable, color = "black")) +    geom_point() +
+    geom_smooth(method=lm , color="blue", se=TRUE) 
 
 ```
 
