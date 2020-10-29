@@ -156,7 +156,8 @@ UtilityData %>% filter(date < ymd("2020-03-15")) -> UtilityDataNoCovid
 ```{r, echo=FALSE}
 
 # Do a stright plot of consumption 
-ggplot(UtilityDataNoCovid, aes(date, varriable, color = "green")) +
+UtilityDataNoCovid %>% filter(type == "Electric") %>%
+ggplot(aes(date, varriable, color = "green")) +
   geom_line() +
   facet_grid(building~.)
 
@@ -166,16 +167,23 @@ UtilityDataNoCovid %>% ggplot( aes(CDD, varriable, color = "green")) +
     geom_smooth(method=lm , color="red", se=TRUE) +
     facet_grid(building~.)
 
-k <- 1
+k <- 7
 #Heating
-UtilityDataNoCovid %>% filter(building == buildings[k] & type == "Steam") %>% filter(month(date) < 4 | month(date) > 10  ) %>% ggplot( aes(HDD, varriable, color = "blue")) +    geom_point() +
-    geom_smooth(method=lm , color="red", se=TRUE) 
+UtilityDataNoCovid %>% filter(building == buildings[k] & type == "Natural Gas") %>% filter(month(date) < 4 | month(date) > 10  ) %>% ggplot( aes(HDD, useage, color = "blue")) +    geom_point() +
+  geom_smooth(method=lm , color="red", se=TRUE) 
 
 #Cooling 
-UtilityDataNoCovid %>% filter(building == buildings[k] & type == "Steam") %>% filter(month(date) > 4 & month(date) < 10  ) %>% ggplot( aes(HDD, varriable, color = "black")) +    geom_point() +
+UtilityDataNoCovid %>% filter(building == buildings[k] & type == "Electric") %>% filter(month(date) > 5 & month(date) < 9  ) %>% ggplot( aes(CDD, useage, color = "black")) +    geom_point() +
     geom_smooth(method=lm , color="blue", se=TRUE) 
 
 ```
 
+```{r}
+
+UtilityDataNoCovid %>% group_by(building, type, year(date)) %>% summarise(Useage = sum(useage)) %>% kable(format = "html", align = c('l', 'l', 'c', 'r'), digits = 0, col.names = c("Building", "Utility", "Year", "Useage"), caption = "All Buildings", label = "History Table") %>% kable_styling(full_width = F)
+
+
+
+```
 
 
