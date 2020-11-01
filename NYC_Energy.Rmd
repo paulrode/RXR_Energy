@@ -29,8 +29,10 @@ The Costant load will be that we observed this past April
     library("knitr")
     library("kableExtra") 
     library("xtable")
-  # Package for forecasting
+  # Packages for forecasting
     library("fable")
+    library("tsibble")
+    library("tsibbledata")
   # Packages for reading excel and html files and XML
     library("openxlsx")
     library("XML")
