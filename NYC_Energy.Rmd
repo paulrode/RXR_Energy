@@ -32,6 +32,7 @@ The Costant load will be that we observed this past April
   # Packages for forecasting
     library("fable")
     library("tsibble")
+    library("forecast")
     library("tsibbledata")
   # Packages for reading excel and html files and XML
     library("openxlsx")
@@ -165,7 +166,10 @@ UtilityDataNoCovid %>%filter(building == building[k] & type == "Electric") %>% s
 ###############################################
 # Time Plot
 
-plot.ts(UtilityTS)
+
+auto.arima(UtilityTS) ->ts
+autoplot(UtilityTS)
+residuals(ts)
 
 # Investigate transformations
 # take first differene to remove trend
