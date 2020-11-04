@@ -158,10 +158,21 @@ UtilityData %>% filter(date < ymd("2020-03-15")) -> UtilityDataNoCovid
 ```{r, echo=FALSE}
 
 # Do a time series forcast using Fabel's Arima function
-UtilityDataNoCovid %>%filter(building == building[k] & type == "Electric") %>% select(useage) %>% ts( , start = c(2017, 2), frequency = 12) -> UtilityTS
+UtilityDataNoCovid %>%filter(building == building[k] & type == "Electric") %>% select(useage) %>% ts(start = c(2017, 2), frequency = 12) -> UtilityTS
 
+###############################################
+# Preliminary Analysis
+###############################################
+# Time Plot
 
+plot.ts(UtilityTS)
 
+# Investigate transformations
+# take first differene to remove trend
+DUT <- diff(UtilityTS)
+plot.ts(DUT)
+
+#looking for seasonality as trend looks stationary
 
 
 
