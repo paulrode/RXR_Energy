@@ -179,7 +179,16 @@ plot.ts(DUT)
 #looking for seasonality as trend looks stationary
 
 
+#################################################
+# Fable analysis
+#################################################
 
+# table specification is index (date), demand, Workday, Temperture. 
+#I will use index, consumption, Workday, DD = cdd-hdd
+UtilityData %>% filter(building == "237 Park" & type == "Electric") %>% mutate("DD" = CDD - HDD) %>% select(date, useage, DD) %>% as.tibble() -> elec
+
+model(ARIMA(elec, useage ~ DD))
+                                                 
 
 # Do a stright plot of consumption 
 UtilityDataNoCovid %>% filter(type == "Electric") %>%
