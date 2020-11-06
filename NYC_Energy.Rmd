@@ -72,7 +72,7 @@ Use the following to make a conditional join https://stackoverflow.com/questions
 alldata <- read_csv("./data/MASTER METERING DATA(2).csv", col_names = TRUE, col_types = "cccccddcd")
 alldata$`Start Date`<- mdy(alldata$`Start Date`)
 alldata$`End Date` <- mdy(alldata$`End Date`)
-alldata %>% mutate(Month = month(`Start Date`), Period = (alldata$`End Date`- alldata$`Start Date`)) %>% mutate(i = interval(ymd(`Start Date`), ymd(`End Date`))) -> alldata
+alldata %>% mutate(Month = month(`Start Date`), Period = (alldata$`End Date`- alldata$`Start Date`))  -> alldata
 
 # Summeraze data by building and utility to make a lookup table
 alldata %>% group_by(Building, `Meter Type`, `Start Date`, `End Date`) %>% summarise(Usage = sum(Usage)) %>% mutate(Usage_Day = Usage / as.numeric(`End Date` - `Start Date`)) -> alldata
@@ -98,7 +98,7 @@ cdd[is.na(cdd)] = 0 # get rid of NA's
 ```
 
 
-
+%>% mutate(i = interval(ymd(`Start Date`), ymd(`End Date`)))
 
 
 ```{r,  echo=FALSE, results="hide", include=FALSE}
@@ -161,23 +161,6 @@ UtilityData %>% filter(date < ymd("2020-03-15")) -> UtilityDataNoCovid
 # Do a time series forcast using Fabel's Arima function
 UtilityDataNoCovid %>%filter(building == building[k] & type == "Electric") %>% select(useage) %>% ts(start = c(2017, 2), frequency = 12) -> UtilityTS
 
-###############################################
-# Preliminary Analysis
-###############################################
-# Time Plot
-
-
-auto.arima(UtilityTS) ->ts
-autoplot(UtilityTS)
-residuals(ts)
-
-# Investigate transformations
-# take first differene to remove trend
-DUT <- diff(UtilityTS)
-plot.ts(DUT)
-
-#looking for seasonality as trend looks stationary
-
 
 #################################################
 # Fable analysis
@@ -185,7 +168,9 @@ plot.ts(DUT)
 
 # table specification is index (date), demand, Workday, Temperture. 
 #I will use index, consumption, Workday, DD = cdd-hdd
-UtilityData %>% filter(building == "237 Park" & type == "Electric") %>% mutate("DD" = CDD - HDD) %>% select(date, useage, DD) %>% as.tibble() -> elec
+UtilityData %>% filter(building == "237 Park" & type == "Electric") %>% mutate("DD" = CDD - HDD) %>% mutate("WorkDay" = wday(date)) %>% select(date, useage, DD, WorkDay) %>% as.tibble() -> UtilityTS
+
+UtilityTS %>% ARIMA(useage ~ DD + pdq(1,0,1) + PDQ(1,1,1, period = "month"))
 
 model(ARIMA(elec, useage ~ DD))
                                                  
