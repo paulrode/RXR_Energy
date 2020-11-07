@@ -12,7 +12,7 @@ library("xtable")
 # Packages for forecasting
 library("fable")
 library("tsibble")
-library("forecast")
+library("feasts")
 library("tsibbledata")
 # Packages for reading excel and html files and XML
 library("openxlsx")
@@ -118,3 +118,14 @@ UtilityData %>% left_join(units) -> UtilityData
 #Trim out covid months 
 UtilityData %>% filter(date < ymd("2020-03-15")) -> UtilityDataNoCovid
 
+###############################################################################
+#   Using the fable family 
+###############################################################################
+
+UtilityData %>% select(date, building, type, useage, HDD, CDD) %>% as_tsibble(index = date, key = c("building", "type")) -> TSUtilityData
+has_gaps(TSUtilityData)
+TSUtilityData %>% filter(building == "1330 AoA" & type == "Electric") -> elect1285
+  autoplot(elect1285)
+glimpse(TSUtilityData)
+
+elect1285 %>% gg_season()
