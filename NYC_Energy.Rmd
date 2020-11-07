@@ -67,6 +67,7 @@ Use the following to make a conditional join https://stackoverflow.com/questions
 
 
 ```{r, echo="FALSE", results='hide'}
+
 #Read in data and fix formats
 
 alldata <- read_csv("./data/MASTER METERING DATA(2).csv", col_names = TRUE, col_types = "cccccddcd")
@@ -158,9 +159,12 @@ UtilityData %>% filter(date < ymd("2020-03-15")) -> UtilityDataNoCovid
 
 ```{r, echo=FALSE}
 
-# Do a time series forcast using Fabel's Arima function
-UtilityDataNoCovid %>%filter(building == building[k] & type == "Electric") %>% select(useage) %>% ts(start = c(2017, 2), frequency = 12) -> UtilityTS
+k <- 4
 
+# Do a time series forcast using Fabel's Arima function
+UtilityDataNoCovid %>%filter(building == building[k] & type == "Electric") %>% select(date, useage, HDD, CDD)  -> Elect
+tsibble(Elect) -> ElectTS
+ElectTS %>% ARIMA() -> electFIT
 
 #################################################
 # Fable analysis
@@ -170,7 +174,7 @@ UtilityDataNoCovid %>%filter(building == building[k] & type == "Electric") %>% s
 #I will use index, consumption, Workday, DD = cdd-hdd
 UtilityData %>% filter(building == "237 Park" & type == "Electric") %>% mutate("DD" = CDD - HDD) %>% mutate("WorkDay" = wday(date)) %>% select(date, useage, DD, WorkDay) %>% as.tibble() -> UtilityTS
 
-UtilityTS %>% ARIMA(useage ~ DD + pdq(1,0,1) + PDQ(1,1,1, period = "month"))
+UtilityTS %>% ARIMA(useage ~ CDD + HDD,  ic = c("aicc", "aic", "bic"))
 
 model(ARIMA(elec, useage ~ DD))
                                                  
