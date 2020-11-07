@@ -122,8 +122,9 @@ UtilityData %>% filter(date < ymd("2020-03-15")) -> UtilityDataNoCovid
 #   Using the fable family 
 ###############################################################################
 
-UtilityData %>% select(date, building, type, useage, HDD, CDD) %>% as_tsibble(index = date, key = c("building", "type")) -> TSUtilityData
-has_gaps(TSUtilityData)
+UtilityData %>% select(date, building, type, useage, HDD, CDD) %>% 
+  as_tsibble(index = date, key = c("building", "type"), ) -> TSUtilityData
+
 TSUtilityData %>% filter(building == "1330 AoA" & type == "Electric") -> elect1285
   autoplot(elect1285)
 glimpse(TSUtilityData)
