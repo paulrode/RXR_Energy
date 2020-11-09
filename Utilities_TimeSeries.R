@@ -43,21 +43,17 @@ if (!file.exists("data")) {
 
 #Read in data and fix formats
 
-alldata <- read_csv("./data/MASTER METERING DATA(2).csv", col_names = TRUE, 
-            colClasses = c("character", "character","character", "Date", "Date", 
-            "Date", "number", "character", "number", "number"))
+alldata <- read_csv("./data/MASTER METERING DATA(2).csv", col_names = TRUE, col_types = "ccc??ddcdd")
 alldata$`Start Date`<- mdy(alldata$`Start Date`)
 alldata$`End Date` <- mdy(alldata$`End Date`)
-alldata <- mutate(alldata, Days = (alldata$`End Date`- alldata$`Start Date`))
 
 # Summeraze data by building and utility to make a lookup table
-alldata %>% group_by(Building, `Meter Type`, `Start Date`, `End Date`) %>% summarise(Usage = sum(Usage)) %>% mutate(Usage_Day = Usage / as.numeric(`End Date` - `Start Date`)) -> alldata
+UseagePerDay <-  alldata %>% group_by(Building, `Meter Type`, `Start Date`, `End Date`) %>% 
+  summarise(Usage = sum(Usage)) %>% 
+  mutate(Usage_Day = Usage / as.numeric(`End Date` - `Start Date`))
 
-#Set up main utility data collection table 
-UtilityData <- data.frame(building = "builidng", datekey = "January 2017", kWh = 1, date = ymd("2017-01-05"), HDD = 1, CDD = 1, varriable = 1 )
-UtilityData[-1,] -> UtilityData
 
-# Bring in DD and then join days per month to get a dataframe with DD/day to then combine with the main alldata
+# Bring in DD 
 hdd <- read_csv("./data/NYSERDA HDD.csv")
 colnames(hdd)[1] <- "Month"
 hdd %>% select(1:5) %>% gather(key = "key", value = "HDD", -1) %>%
@@ -73,3 +69,30 @@ cdd[is.na(cdd)] = 0 # get rid of NA's
 #Make a unique building and meter type vectors
 buildings <- unique(alldata$Building)
 units <- data.frame("type" = unique(alldata$`Meter Type`), "unit" = c("kWh", "MLbs", "hcf", "hcf", "hcf", "gal", "Therms", "hcf"))
+
+###############################################################################
+#                 Lood at 1330 AoA                                            #
+###############################################################################
+
+elect1330 <- UseagePerDay %>% filter(Building == "1330 AoA" & `Meter Type` == "Electric") %>% 
+  mutate(date.index = yearmonth(`End Date`))
+
+qplot(`End Date`, Usage, data = TS1330elect, geom = "line")
+
+
+TSelect1330 <- as_tsibble(elect1330, index = date.index, regular = TRUE)
+
+TSelect1330 %>% autoplot(Usage)
+
+  fit <- TSelect1330 %>% 
+  model(auto_ets = ETS(Usage))
+fit
+report(fit)
+glance(fit)
+
+fc <- fit %>% 
+  forecast(h = "2 years")
+fc
+
+fc %>% 
+  autoplot(TSelect1330)
