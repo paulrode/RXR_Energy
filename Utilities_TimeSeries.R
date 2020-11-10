@@ -70,19 +70,22 @@ cdd[is.na(cdd)] = 0 # get rid of NA's
 buildings <- unique(alldata$Building)
 units <- data.frame("type" = unique(alldata$`Meter Type`), "unit" = c("kWh", "MLbs", "hcf", "hcf", "hcf", "gal", "Therms", "hcf"))
 
+
+
+
 ###############################################################################
 #                 Lood at 1330 AoA                                            #
 ###############################################################################
 
-elect1330 <- UseagePerDay %>% filter(Building == "1330 AoA" & `Meter Type` == "Electric") %>% 
-  mutate(date.index = yearmonth(`End Date`))
+elect450 <- UseagePerDay %>% filter(Building == "450 Lex" & `Meter Type` == "Electric") %>% 
+  mutate(date.index = yearmonth(`End Date`)) %>% filter(`Start Date` < ymd("2020-03-15"))
 
-qplot(`End Date`, Usage, data = TS1330elect, geom = "line")
+qplot(`End Date`, Usage, data = elect450, geom = "line")
 
 
-TSelect1330 <- as_tsibble(elect1330, index = date.index, regular = TRUE)
+TSelect450 <- as_tsibble(elect450, index = `date.index`, regular = TRUE)
 
-TSelect1330 %>% autoplot(Usage)
+TSelect450 %>% autoplot(Usage)
 
   fit <- TSelect1330 %>% 
   model(auto_ets = ETS(Usage))
