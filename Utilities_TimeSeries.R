@@ -43,14 +43,14 @@ if (!file.exists("data")) {
 
 #Read in data and fix formats
 
-alldata <- read_csv("./data/MASTER METERING DATA(2).csv", col_names = TRUE, col_types = "ccc??ddcdd")
+alldata <- read_csv("./data/MASTER METERING DATA(2).csv", col_names = TRUE, col_types = "ccc??ddcdc")
 alldata$`Start Date`<- mdy(alldata$`Start Date`)
 alldata$`End Date` <- mdy(alldata$`End Date`)
 
 # Summeraze data by building and utility to make a lookup table
 UseagePerDay <-  alldata %>% group_by(Building, `Meter Type`, `Start Date`, `End Date`) %>% 
   summarise(Usage = sum(Usage)) %>% 
-  mutate(Usage_Day = Usage / as.numeric(`End Date` - `Start Date`))
+  mutate(Usage_Day = Usage / as.numeric(`End Date` - `Start Date`), span = interval(ymd(`Start Date`),ymd(`End Date`)) )
 
 
 # Bring in DD 
@@ -78,7 +78,7 @@ units <- data.frame("type" = unique(alldata$`Meter Type`), "unit" = c("kWh", "ML
 ###############################################################################
 
 elect450 <- UseagePerDay %>% filter(Building == "450 Lex" & `Meter Type` == "Electric") %>% 
-  mutate(date.index = yearmonth(`End Date`)) %>% filter(`Start Date` < ymd("2020-03-15"))
+  mutate(date.index = yearmonth(`End Date`)) %>% filter(`Start Date` < ymd("2020-02-15"))
 
 qplot(`End Date`, Usage, data = elect450, geom = "line")
 
