@@ -50,7 +50,8 @@ alldata$`End Date` <- mdy(alldata$`End Date`)
 # Summeraze data by building and utility to make a lookup table
 UseagePerDay <-  alldata %>% group_by(Building, `Meter Type`, `Start Date`, `End Date`) %>% 
   summarise(Usage = sum(Usage)) %>% 
-  mutate(Usage_Day = Usage / as.numeric(`End Date` - `Start Date`), span = interval(ymd(`Start Date`),ymd(`End Date`)) )
+  mutate(days = as.numeric(`End Date` - `Start Date`), Usage_Day = Usage / days, 
+         TimeSpan = interval(`Start Date`,days(days)))
 
 
 # Bring in DD 
