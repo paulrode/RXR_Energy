@@ -78,13 +78,14 @@ units <- data.frame("type" = unique(alldata$`Meter Type`), "unit" = c("kWh", "ML
 #                 Lood at 1330 AoA                                            #
 ###############################################################################
 
-elect450 <- UseagePerDay %>% filter(Building == "450 Lex" & `Meter Type` == "Electric") %>% 
-  mutate(date.index = yearmonth(`End Date`)) %>% filter(`Start Date` < ymd("2020-02-15"))
+elect450 <- UseagePerDay %>% filter(Building == "450 Lex" & `Meter Type` == "Electric")  %>% 
+  filter(`Start Date` < ymd("2020-02-15"))
 
 qplot(`End Date`, Usage, data = elect450, geom = "line")
 
 
-TSelect450 <- as_tsibble(elect450, index = `date.index`, regular = TRUE)
+TSelect450 <- as_tsibble(elect450, index = `End Date`, regular = FALSE)
+
 
 TSelect450 %>% autoplot(Usage)
 
