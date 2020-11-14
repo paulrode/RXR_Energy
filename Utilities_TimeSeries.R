@@ -46,6 +46,9 @@ if (!file.exists("data")) {
 alldata <- read_csv("./data/MASTER METERING DATA(2).csv", col_names = TRUE, col_types = "ccc??ddcdc")
 alldata$`Start Date`<- mdy(alldata$`Start Date`)
 alldata$`End Date` <- mdy(alldata$`End Date`)
+colnames(alldata)[2] <- "Type"
+units <- data.frame("Type" = unique(alldata$Type), "unit" = c("kWh", "MLbs", "hcf", "hcf", "hcf", "gal", "Therms", "hcf"))
+alldata <- alldata %>% select(-Units) %>% left_join(units, by = "Type")
 
 # Summeraze data by building and utility to make a lookup table
 UseagePerDay <-  alldata %>% group_by(Building, `Meter Type`, `Start Date`, `End Date`) %>% 
@@ -69,7 +72,6 @@ cdd[is.na(cdd)] = 0 # get rid of NA's
 
 #Make a unique building and meter type vectors
 buildings <- unique(alldata$Building)
-units <- data.frame("type" = unique(alldata$`Meter Type`), "unit" = c("kWh", "MLbs", "hcf", "hcf", "hcf", "gal", "Therms", "hcf"))
 
 
 
