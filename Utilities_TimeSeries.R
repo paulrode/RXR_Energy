@@ -51,11 +51,9 @@ units <- data.frame("Type" = unique(alldata$Type), "unit" = c("kWh", "MLbs", "hc
 alldata <- alldata %>% select(-Units) %>% left_join(units, by = "Type")
 
 # Summeraze data by building and utility to make a lookup table
-UseagePerDay <-  alldata %>% group_by(Building, `Meter Type`, `Start Date`, `End Date`) %>% 
+UseagePerDay <-  alldata %>% group_by(Building, `Type`, `Start Date`, `End Date`) %>% 
   summarise(Usage = sum(Usage)) %>% 
-  mutate(days = as.numeric(`End Date` - `Start Date`), Usage_Day = Usage / days, 
-         TimeSpan = interval(`Start Date`,days(days)))
-
+  mutate(days = as.numeric(`End Date` - `Start Date`), Usage_Day = Usage / days)
 
 # Bring in DD 
 hdd <- read_csv("./data/NYSERDA HDD.csv")
@@ -80,19 +78,17 @@ buildings <- unique(alldata$Building)
 #                 Lood at 1330 AoA                                            #
 ###############################################################################
 
-elect450 <- UseagePerDay %>% filter(Building == "450 Lex" & `Meter Type` == "Electric")  %>% 
+elect450nocovid <- UseagePerDay %>% filter(Building == "450 Lex" & `Type` == "Electric")  %>% 
   filter(`Start Date` < ymd("2020-02-15"))
 
 qplot(`End Date`, Usage, data = elect450, geom = "line")
 
 
-TSelect450 <- as_tsibble(elect450, index = `End Date`, regular = FALSE)
-
-
-TSelect450 %>% autoplot(Usage)
-
-  fit <- TSelect1330 %>% 
-  model(auto_ets = ETS(Usage))
+TSelect450 <- as_tsibble(elect450nocovid, index = `End Date`, key = c(Building, Type, Usage), regular = FALSE)
+str(TSelect450)
+glimpse(TSelect450)
+fit <- TSelect450 %>% 
+  model(auto_ets = ETS(Usage_Day))
 fit
 report(fit)
 glance(fit)
@@ -102,4 +98,4 @@ fc <- fit %>%
 fc
 
 fc %>% 
-  autoplot(TSelect1330)
+  autoplot(TSelect450)
