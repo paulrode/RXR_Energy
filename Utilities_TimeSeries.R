@@ -40,6 +40,7 @@ if (!getwd() == "C:/Users/paulr/Documents/RXR_Energy") {setwd("./RXR_Energy")}
 if (!file.exists("data")) {
   dir.create("data")
 }
+options(warn = -1)  
 
 #Read in data and fix formats
 
@@ -78,24 +79,33 @@ buildings <- unique(alldata$Building)
 #                 Lood at 1330 AoA                                            #
 ###############################################################################
 
-elect450nocovid <- UseagePerDay %>% filter(Building == "450 Lex" & `Type` == "Electric")  %>% 
-  filter(`Start Date` < ymd("2020-02-15"))
+elect1330nocovid <- UseagePerDay %>% filter(Building == "1330 AoA" & `Type` == "Electric")  %>%
+  mutate(index = yearmonth(`End Date`)) %>% filter(`Start Date` < ymd("2020-02-15")) %>%
+  arrange(`End Date`)
 
 qplot(`End Date`, Usage, data = elect450, geom = "line")
 
 
-TSelect450 <- as_tsibble(elect450nocovid, index = `End Date`, key = c(Building, Type, Usage), regular = FALSE)
-str(TSelect450)
-glimpse(TSelect450)
-fit <- TSelect450 %>% 
-  model(auto_ets = ETS(Usage_Day))
-fit
-report(fit)
-glance(fit)
+elec1330 <- as_tsibble(elect1330nocovid, index =index, key = c(Building, Type), regular = TRUE)
+str(elec1330)
+glimpse(elec1330)
 
-fc <- fit %>% 
-  forecast(h = "2 years")
-fc
+elec1330 %>%
+  filter(`Start Date` < ymd("2020-02-15")) %>% 
+  model(
+    ets = ETS(box_cox(Usage, 0.3)),
+    arima = ARIMA(log(Usage)),
+    snaive = SNAIVE(Usage)
+  ) %>%
+  forecast(h = "2 years") %>% 
+  autoplot(elec1330, level = NULL)
+elec1330 %>% 
+  filter(`Start Date` < ymd("2020-02-15")) %>% 
+  model(
+    ets = ETS(box_cox(Usage, 0.3)),
+    arima = ARIMA(log(Usage)),
+    snaive = SNAIVE(Usage)
+  ) %>%
+  forecast(h = "2 years") -> elec1330_sn
+elec1330_sn
 
-fc %>% 
-  autoplot(TSelect450)

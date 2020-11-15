@@ -153,8 +153,8 @@ UtilityData %>% left_join(units) -> UtilityData
 
 #Trim out covid months 
 UtilityData %>% filter(date < ymd("2020-03-15")) -> UtilityDataNoCovid
-save(UtilityData, file = "Utilitydata")
-save(UtilityDataNoCovid, file = "UtilityDataNoCovid")
+save(UtilityData, file = "./data/Utilitydata")
+save(UtilityDataNoCovid, file = "./data/UtilityDataNoCovid")
 
 ```
 
