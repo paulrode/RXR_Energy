@@ -40,8 +40,10 @@ if (!getwd() == "C:/Users/paulr/Documents/RXR_Energy") {setwd("./RXR_Energy")}
 if (!file.exists("data")) {
   dir.create("data")
 }
-options(warn = -1)  
 
+###############################################################################
+                            # Read in data
+###############################################################################
 #Read in data and fix formats
 
 alldata <- read_csv("./data/MASTER METERING DATA(2).csv", col_names = TRUE, col_types = "ccc??ddcdc")
@@ -50,6 +52,9 @@ alldata$`End Date` <- mdy(alldata$`End Date`)
 colnames(alldata)[2] <- "Type"
 units <- data.frame("Type" = unique(alldata$Type), "unit" = c("kWh", "MLbs", "hcf", "hcf", "hcf", "gal", "Therms", "hcf"))
 alldata <- alldata %>% select(-Units) %>% left_join(units, by = "Type")
+
+load("./data/Utilitydata") # To be used later for normarilizing over a true month. 
+load("./data/UtilitydataNoCovid") #Same as above.
 
 # Summeraze data by building and utility to make a lookup table
 UseagePerDay <-  alldata %>% group_by(Building, `Type`, `Start Date`, `End Date`) %>% 
@@ -76,14 +81,14 @@ buildings <- unique(alldata$Building)
 
 
 ###############################################################################
-#                 Lood at 1330 AoA                                            #
+                             # Lood at 1330 AoA                                            
 ###############################################################################
 
 elect1330nocovid <- UseagePerDay %>% filter(Building == "1330 AoA" & `Type` == "Electric")  %>%
   mutate(index = yearmonth(`End Date`)) %>% filter(`Start Date` < ymd("2020-02-15")) %>%
   arrange(`End Date`)
 
-qplot(`End Date`, Usage, data = elect450, geom = "line")
+qplot(`End Date`, Usage, data = elect1330nocovid, geom = "line")
 
 
 elec1330 <- as_tsibble(elect1330nocovid, index =index, key = c(Building, Type), regular = TRUE)
@@ -97,15 +102,22 @@ elec1330 %>%
     arima = ARIMA(log(Usage)),
     snaive = SNAIVE(Usage)
   ) %>%
-  forecast(h = "2 years") %>% 
+  forecast(h = "1 years") %>% 
   autoplot(elec1330, level = NULL)
-elec1330 %>% 
-  filter(`Start Date` < ymd("2020-02-15")) %>% 
-  model(
-    ets = ETS(box_cox(Usage, 0.3)),
-    arima = ARIMA(log(Usage)),
-    snaive = SNAIVE(Usage)
-  ) %>%
-  forecast(h = "2 years") -> elec1330_sn
-elec1330_sn
 
+###############################################################################
+                            # Using normarilized dataframe
+###############################################################################
+
+elec1330 <- as_tsibble(UtilityData, index = date, key = c(building, type), regular = TRUE)
+autoplot(elec1330, useage)
+glimpse(elec1330)
+
+elec1330 %>%  filter(`date` < ymd("2020-02-15")) %>% 
+  model(
+    ets = ETS(box_cox(useage, 0.3)),
+    arima = ARIMA(log(useage)),
+    snaive = SNAIVE(useage)
+  ) %>%
+  forecast(h = "1 years") %>% 
+  autoplot(elec1330, level = NULL)
