@@ -38,7 +38,7 @@ The Costant load will be that we observed this past April
     library("openxlsx")
     library("XML")
   # Parkage for using data tables for very large data operations
-    #library("data.table")
+    library("data.table")
   #Package for reading fixed width tables
     library("utils")
   # Packages for reading data through API's 
