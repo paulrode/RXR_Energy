@@ -155,6 +155,8 @@ UtilityData %>% left_join(units) -> UtilityData
 UtilityData %>% filter(date < ymd("2020-03-15")) -> UtilityDataNoCovid
 save(UtilityData, file = "./data/Utilitydata")
 save(UtilityDataNoCovid, file = "./data/UtilityDataNoCovid")
+#load(file = "./data/Utilitydata", envir = parent.frame())
+getwd()
 
 ```
 
